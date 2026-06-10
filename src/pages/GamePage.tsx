@@ -1,4 +1,5 @@
 import { useMemo, useRef, useState } from 'react';
+import { ArrowDown } from 'lucide-react';
 import DraftBanner from '../components/DraftBanner';
 import Pitch from '../components/Pitch';
 import ResultPanel from '../components/ResultPanel';
@@ -13,11 +14,14 @@ interface GamePageProps {
   squad: Squad;
   formation: Formation;
   lineup: LineupSelection;
+  pendingSlotId: string | null;
   difficultyId: DifficultyId;
   exactScoreMode: boolean;
   rerollsLeft: number;
   result: MatchResult | null;
   onPlacePlayer: (slotId: string, player: Player) => void;
+  onRemoveProvisional: () => void;
+  onContinueDraft: () => void;
   onSimulate: () => void;
   onReplay: () => void;
   onNewDraw: () => void;
@@ -29,11 +33,14 @@ export default function GamePage({
   squad,
   formation,
   lineup,
+  pendingSlotId,
   difficultyId,
   rerollsLeft,
   result,
   draw,
   onPlacePlayer,
+  onRemoveProvisional,
+  onContinueDraft,
   onSimulate,
   onReplay,
   onNewDraw,
@@ -59,26 +66,62 @@ export default function GamePage({
     pitchRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
+  // The placement stays provisional; bring the banner back into view so Continue Draft is visible.
   const placePending = (slotId: string) => {
     if (pendingPlayer) {
       onPlacePlayer(slotId, pendingPlayer);
       setPendingPlayer(null);
-      squadRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
+  };
+
+  // Undoing the provisional pick sends the user back to the squad list to try someone else.
+  const removeProvisional = () => {
+    onRemoveProvisional();
+    setPendingPlayer(null);
+    squadRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
+  // Locks the pick, spins the next draw, and lands the user on the new squad list.
+  const continueDraft = () => {
+    onContinueDraft();
+    setPendingPlayer(null);
+    squadRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
   return (
     <main className="game-page">
-      <DraftBanner squad={squad} rerollsLeft={rerollsLeft} onChangeTeam={onChangeTeam} onChangeYear={onChangeYear} />
+      <DraftBanner
+        squad={squad}
+        rerollsLeft={rerollsLeft}
+        canReroll={pendingSlotId === null}
+        onChangeTeam={onChangeTeam}
+        onChangeYear={onChangeYear}
+      />
 
       {result ? (
         <ResultPanel result={result} onReplay={onReplay} onNewDraw={onNewDraw} />
       ) : (
         <>
+          {!evaluation.isComplete ? (
+            <button
+              className="continue-draft"
+              type="button"
+              disabled={pendingSlotId === null}
+              title={pendingSlotId === null ? 'Place a player on the pitch first' : 'Lock this pick and draw the next team'}
+              onClick={continueDraft}
+            >
+              <ArrowDown size={15} />
+              Continue Draft
+            </button>
+          ) : null}
+
           <SquadList
             ref={squadRef}
             squad={squad}
+            formation={formation}
             lineup={lineup}
+            provisionalSlotId={pendingSlotId}
             pendingPlayerId={pendingPlayer?.id ?? null}
             onPickPlayer={pickPlayer}
           />
@@ -88,7 +131,9 @@ export default function GamePage({
             formation={formation}
             lineup={lineup}
             pendingPlayer={pendingPlayer}
+            provisionalSlotId={pendingSlotId}
             onPlacePending={placePending}
+            onRemoveProvisional={removeProvisional}
           />
 
           <SelectedXI formation={formation} lineup={lineup} evaluation={evaluation} onSimulate={onSimulate} />

@@ -1,11 +1,13 @@
 import { Check } from 'lucide-react';
 import { forwardRef, useEffect, useMemo, useRef } from 'react';
-import { getPositionGroup } from '../game-engine/positions';
-import type { LineupSelection, Player, RoleGroup, Squad } from '../types/game';
+import { getPositionGroup, hasOpenCompatibleSlot } from '../game-engine/positions';
+import type { Formation, LineupSelection, Player, RoleGroup, Squad } from '../types/game';
 
 interface SquadListProps {
   squad: Squad;
+  formation: Formation;
   lineup: LineupSelection;
+  provisionalSlotId: string | null;
   pendingPlayerId: string | null;
   onPickPlayer: (player: Player) => void;
 }
@@ -23,12 +25,18 @@ const sortSquad = (players: Player[]) =>
   });
 
 const SquadList = forwardRef<HTMLElement, SquadListProps>(function SquadList(
-  { squad, lineup, pendingPlayerId, onPickPlayer },
+  { squad, formation, lineup, provisionalSlotId, pendingPlayerId, onPickPlayer },
   ref,
 ) {
   const usedPlayerIds = useMemo(
     () => new Set(Object.values(lineup).flatMap((player) => (player ? [player.id] : []))),
     [lineup],
+  );
+
+  // Picking a teammate would swap with the provisional pick, so treat that slot as still open.
+  const openLineup = useMemo(
+    () => (provisionalSlotId ? { ...lineup, [provisionalSlotId]: null } : lineup),
+    [lineup, provisionalSlotId],
   );
   const players = useMemo(() => sortSquad(squad.players), [squad]);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -47,15 +55,19 @@ const SquadList = forwardRef<HTMLElement, SquadListProps>(function SquadList(
       <div className="squad-list__scroll" ref={scrollRef}>
         {players.map((player) => {
           const isUsed = usedPlayerIds.has(player.id);
+          const isBlocked = !isUsed && !hasOpenCompatibleSlot(formation, openLineup, player);
           const isPending = player.id === pendingPlayerId;
           const [primary, ...alternates] = player.positions;
 
           return (
             <button
               key={player.id}
-              className={`squad-row ${isUsed ? 'squad-row--used' : ''} ${isPending ? 'squad-row--pending' : ''}`}
+              className={`squad-row ${isUsed ? 'squad-row--used' : ''} ${isBlocked ? 'squad-row--blocked' : ''} ${
+                isPending ? 'squad-row--pending' : ''
+              }`}
               type="button"
-              disabled={isUsed}
+              disabled={isUsed || isBlocked}
+              title={isBlocked ? 'No compatible position left in your formation' : undefined}
               onClick={() => onPickPlayer(player)}
             >
               <span className="squad-row__number">{player.shirtNumber}</span>
@@ -64,7 +76,9 @@ const SquadList = forwardRef<HTMLElement, SquadListProps>(function SquadList(
                 <strong>{primary}</strong>
                 {alternates.length > 0 ? <small>{alternates.join(' ')}</small> : null}
               </span>
-              <span className="squad-row__rating">{isUsed ? <Check size={15} /> : player.rating}</span>
+              <span className="squad-row__rating">
+                {isUsed ? <Check size={15} /> : isBlocked ? '—' : player.rating}
+              </span>
             </button>
           );
         })}

@@ -670,6 +670,32 @@ p {
   font-weight: 900;
 }
 
+.continue-draft {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 42px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--ink);
+  background: var(--mint);
+  font-size: 0.84rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: filter 160ms ease;
+}
+
+.continue-draft:hover:not(:disabled) {
+  filter: brightness(1.04);
+}
+
+.continue-draft:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 /* squad list */
 
 .squad-list {
@@ -731,6 +757,15 @@ p {
 
 .squad-row--used {
   opacity: 0.45;
+}
+
+.squad-row--blocked {
+  opacity: 0.35;
+}
+
+.squad-row--blocked .squad-row__rating {
+  color: var(--muted);
+  background: var(--surface-strong);
 }
 
 .squad-row__number {
@@ -899,6 +934,34 @@ p {
 
 .slot-card--target > button:hover {
   background: var(--sand);
+}
+
+.slot-card--provisional > button {
+  border-style: dashed;
+  border-color: rgba(22, 32, 26, 0.45);
+}
+
+/* Higher specificity than `.slot-card > button` so the undo chip keeps its own size. */
+.slot-card > button.slot-card__undo {
+  position: absolute;
+  z-index: 4;
+  top: -9px;
+  right: -9px;
+  display: grid;
+  width: 22px;
+  min-height: 22px;
+  height: 22px;
+  place-items: center;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--ink);
+  background: var(--red);
+  cursor: pointer;
+}
+
+.slot-card > button.slot-card__undo:hover {
+  filter: brightness(1.05);
 }
 
 .slot-card__position {

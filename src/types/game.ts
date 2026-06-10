@@ -162,6 +162,8 @@ export interface PersistedGameState {
   phase: 'landing' | 'setup' | 'selection' | 'result';
   draw: GameDraw | null;
   lineup: LineupSelection;
+  /** Slot holding the provisional pick from the current draw; removable until Continue Draft locks it. */
+  pendingSlotId: string | null;
   difficultyId: DifficultyId;
   teamStyle: TeamStyle;
   rerollsLeft: number;

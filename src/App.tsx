@@ -19,6 +19,7 @@ const initialState: PersistedGameState = {
   phase: 'landing',
   draw: null,
   lineup: {},
+  pendingSlotId: null,
   difficultyId: 'classic',
   teamStyle: 'balanced',
   rerollsLeft: TOTAL_REROLLS,
@@ -59,6 +60,7 @@ export default function App() {
       phase: 'setup',
       draw: null,
       lineup: {},
+      pendingSlotId: null,
       result: null,
       rerollsLeft: TOTAL_REROLLS,
     }));
@@ -78,15 +80,17 @@ export default function App() {
       draw,
       teamStyle,
       lineup: createEmptyLineup(nextFormation),
+      pendingSlotId: null,
       rerollsLeft: TOTAL_REROLLS,
       result: null,
     }));
   };
 
-  // Skipping a draw keeps every player already placed; it only swaps the squad on offer.
+  // Skipping a draw keeps every locked player; it only swaps the squad on offer.
+  // Not allowed while a provisional pick from the current draw is on the pitch.
   const applyReroll = (nextDraw: GameDraw) => {
     setState((current) => {
-      if (current.rerollsLeft <= 0) {
+      if (current.rerollsLeft <= 0 || current.pendingSlotId) {
         return current;
       }
 
@@ -130,31 +134,66 @@ export default function App() {
       ...current,
       phase: 'selection',
       lineup: createEmptyLineup(formation),
+      pendingSlotId: null,
       rerollsLeft: TOTAL_REROLLS,
       result: null,
     }));
   };
 
-  // Placing a player locks the pick and immediately spins a fresh random team + year.
+  // Placement stays provisional: the player can still be swapped until Continue Draft locks them in.
   const placePlayer = (slotId: string, player: Player) => {
     setState((current) => {
       const alreadyUsedElsewhere = Object.entries(current.lineup).some(([lineupSlotId, picked]) => {
-        return lineupSlotId !== slotId && picked?.id === player.id;
+        return lineupSlotId !== slotId && lineupSlotId !== current.pendingSlotId && picked?.id === player.id;
       });
 
       if (alreadyUsedElsewhere || !current.draw) {
         return current;
       }
 
+      const lineup = { ...current.lineup, [slotId]: player };
+
+      // Moving the provisional pick to a new spot frees the previous slot.
+      if (current.pendingSlotId && current.pendingSlotId !== slotId) {
+        lineup[current.pendingSlotId] = null;
+      }
+
       return {
         ...current,
-        lineup: {
-          ...current.lineup,
-          [slotId]: player,
-        },
-        draw: nextRandomDraw(current.draw),
+        lineup,
+        pendingSlotId: slotId,
         result: null,
         phase: 'selection',
+      };
+    });
+  };
+
+  // Undo the provisional pick so another player from the same draw can be tried.
+  const removeProvisional = () => {
+    setState((current) => {
+      if (!current.pendingSlotId) {
+        return current;
+      }
+
+      return {
+        ...current,
+        lineup: { ...current.lineup, [current.pendingSlotId]: null },
+        pendingSlotId: null,
+      };
+    });
+  };
+
+  // Locks the provisional pick and spins a fresh random team + year.
+  const continueDraft = () => {
+    setState((current) => {
+      if (!current.pendingSlotId || !current.draw) {
+        return current;
+      }
+
+      return {
+        ...current,
+        pendingSlotId: null,
+        draw: nextRandomDraw(current.draw),
       };
     });
   };
@@ -167,6 +206,7 @@ export default function App() {
     setState((current) => ({
       ...current,
       phase: 'result',
+      pendingSlotId: null,
       result: simulateMatch(formation, evaluation, difficulty, current.exactScoreMode),
     }));
   };
@@ -195,11 +235,14 @@ export default function App() {
           squad={squad}
           formation={formation}
           lineup={state.lineup}
+          pendingSlotId={state.pendingSlotId}
           difficultyId={state.difficultyId}
           exactScoreMode={state.exactScoreMode}
           rerollsLeft={state.rerollsLeft}
           result={state.result}
           onPlacePlayer={placePlayer}
+          onRemoveProvisional={removeProvisional}
+          onContinueDraft={continueDraft}
           onSimulate={simulate}
           onReplay={replayDraw}
           onNewDraw={goToSetup}

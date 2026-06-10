@@ -1,18 +1,19 @@
 import { forwardRef } from 'react';
+import { X } from 'lucide-react';
+import { playerFitsSlot } from '../game-engine/positions';
 import type { Formation, LineupSelection, Player } from '../types/game';
 
 interface PitchProps {
   formation: Formation;
   lineup: LineupSelection;
   pendingPlayer: Player | null;
+  provisionalSlotId: string | null;
   onPlacePending: (slotId: string) => void;
+  onRemoveProvisional: () => void;
 }
 
-export const isSlotCompatible = (acceptedPositions: string[], player: Player) =>
-  player.positions.some((position) => acceptedPositions.includes(position));
-
 const Pitch = forwardRef<HTMLElement, PitchProps>(function Pitch(
-  { formation, lineup, pendingPlayer, onPlacePending },
+  { formation, lineup, pendingPlayer, provisionalSlotId, onPlacePending, onRemoveProvisional },
   ref,
 ) {
   return (
@@ -30,16 +31,30 @@ const Pitch = forwardRef<HTMLElement, PitchProps>(function Pitch(
         <div className="pitch__box pitch__box--bottom" />
         {formation.slots.map((slot) => {
           const player = lineup[slot.id] ?? null;
-          const isTarget = Boolean(
-            pendingPlayer && !player && isSlotCompatible(slot.acceptedPositions, pendingPlayer),
-          );
+          // The provisional slot can be re-targeted: placing there swaps the try-out player.
+          const treatAsEmpty = !player || slot.id === provisionalSlotId;
+          const isTarget = Boolean(pendingPlayer && treatAsEmpty && playerFitsSlot(slot, pendingPlayer));
+          const isProvisional = Boolean(player && slot.id === provisionalSlotId);
 
           return (
             <div
               key={slot.id}
-              className={`slot-card ${player ? 'slot-card--filled' : ''} ${isTarget ? 'slot-card--target' : ''}`}
+              className={`slot-card ${player ? 'slot-card--filled' : ''} ${isTarget ? 'slot-card--target' : ''} ${
+                isProvisional ? 'slot-card--provisional' : ''
+              }`}
               style={{ left: `${slot.x}%`, top: `${slot.y}%` }}
             >
+              {isProvisional ? (
+                <button
+                  type="button"
+                  className="slot-card__undo"
+                  aria-label={`Remove ${player?.name}`}
+                  title="Try another player instead"
+                  onClick={onRemoveProvisional}
+                >
+                  <X size={13} />
+                </button>
+              ) : null}
               <button
                 type="button"
                 disabled={!isTarget}
