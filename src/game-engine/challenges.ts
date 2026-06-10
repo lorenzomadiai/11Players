@@ -97,8 +97,25 @@ export const challengeDefinitions: ChallengeDefinition[] = [
   },
 ];
 
+/** No-op challenge for draft mode, where no extra rule is surfaced to the player. */
+export const freePlayChallenge: ChallengeDefinition = {
+  id: 'free-play',
+  label: 'Free Play',
+  description: 'No extra rule. Build the best XI you can.',
+  isAvailable: () => true,
+  evaluate: (players) => ({
+    id: 'free-play',
+    label: 'Free Play',
+    passed: players.length === 11,
+    penalty: 0,
+    notes: [],
+  }),
+};
+
 export const getChallengeById = (id: string) =>
-  challengeDefinitions.find((challenge) => challenge.id === id) ?? challengeDefinitions[0];
+  id === freePlayChallenge.id
+    ? freePlayChallenge
+    : (challengeDefinitions.find((challenge) => challenge.id === id) ?? challengeDefinitions[0]);
 
 export const getAvailableChallenges = (squad: Squad) =>
   challengeDefinitions.filter((challenge) => challenge.isAvailable(squad));

@@ -1,4 +1,5 @@
-import { Dice5, Goal, Play, Shield, Sparkles, Target } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { Dice5, Goal, Info, Play, Shield, Sparkles, Target, X } from 'lucide-react';
 import DifficultySelector from '../components/DifficultySelector';
 import type { DifficultyId } from '../types/game';
 
@@ -31,16 +32,55 @@ export default function LandingPage({
   onExactScoreModeChange,
   onStart,
 }: LandingPageProps) {
+  const [infoOpen, setInfoOpen] = useState(false);
+  const infoRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!infoOpen) return;
+    const handlePointerDown = (event: PointerEvent) => {
+      if (infoRef.current && !infoRef.current.contains(event.target as Node)) {
+        setInfoOpen(false);
+      }
+    };
+    document.addEventListener('pointerdown', handlePointerDown);
+    return () => document.removeEventListener('pointerdown', handlePointerDown);
+  }, [infoOpen]);
+
   return (
     <main className="landing-page">
       <section className="landing-hero">
         <div className="landing-copy">
           <p className="eyebrow">Roll history. Build the XI. Survive the simulation.</p>
-          <h2>Draft an 11-player World Cup lineup from one nation, one edition, and one tactical shape.</h2>
-          <p>
-            Each run draws a national team, tournament year, formation, and side challenge. Pick eligible players from
-            that squad, chase chemistry bonuses, and see whether the simulator loves your football logic.
-          </p>
+          <h2>
+            Draft an 11-player World Cup lineup from one nation, one edition, and one tactical shape.
+            <span className="info-popover" ref={infoRef}>
+              <button
+                className="info-button"
+                type="button"
+                aria-label="How a run works"
+                aria-expanded={infoOpen}
+                onClick={() => setInfoOpen((open) => !open)}
+              >
+                <Info size={15} />
+              </button>
+              {infoOpen && (
+                <span className="info-popover__bubble" role="note">
+                  <button
+                    className="info-popover__close"
+                    type="button"
+                    aria-label="Close"
+                    onClick={() => setInfoOpen(false)}
+                  >
+                    <X size={13} />
+                  </button>
+                  Each run draws a national team, tournament year, formation, and side challenge. Pick eligible
+                  players from that squad, chase chemistry bonuses, and see whether the simulator loves your football
+                  logic.
+                </span>
+              )}
+            </span>
+          </h2>
+          <DifficultySelector difficultyId={difficultyId} onChange={onDifficultyChange} />
           <div className="hero-actions">
             <button className="primary-action" type="button" onClick={onStart}>
               <Play size={18} />
@@ -71,30 +111,36 @@ export default function LandingPage({
         </div>
       </section>
 
-      <section className="landing-grid">
+      <section className="feature-strip" aria-label="Game features">
         <article>
-          <Dice5 size={21} />
-          <h3>Random Draws</h3>
-          <p>Countries, World Cup editions, formations, and challenges combine into fresh squad-building puzzles.</p>
+          <Dice5 size={16} />
+          <div>
+            <h3>Random Draws</h3>
+            <p>Countries, editions, formations, and challenges combine into fresh puzzles.</p>
+          </div>
         </article>
         <article>
-          <Sparkles size={21} />
-          <h3>Legend Boosts</h3>
-          <p>Iconic players can tilt tight simulations, but challenge rules may make you leave them out.</p>
+          <Sparkles size={16} />
+          <div>
+            <h3>Legend Boosts</h3>
+            <p>Iconic players tilt tight simulations, but rules may rule them out.</p>
+          </div>
         </article>
         <article>
-          <Shield size={21} />
-          <h3>Chemistry Checks</h3>
-          <p>Same club links, tournament-era cohesion, and position compatibility shape the final score.</p>
+          <Shield size={16} />
+          <div>
+            <h3>Chemistry Checks</h3>
+            <p>Club links, era cohesion, and position fit shape the final score.</p>
+          </div>
         </article>
         <article>
-          <Goal size={21} />
-          <h3>Match Feedback</h3>
-          <p>Results explain attack, midfield, defense, tactical fit, randomness, and post-match comedy.</p>
+          <Goal size={16} />
+          <div>
+            <h3>Match Feedback</h3>
+            <p>Results explain attack, defense, tactics, luck, and post-match comedy.</p>
+          </div>
         </article>
       </section>
-
-      <DifficultySelector difficultyId={difficultyId} onChange={onDifficultyChange} />
     </main>
   );
 }

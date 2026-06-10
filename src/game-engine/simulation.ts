@@ -1,4 +1,4 @@
-import type { Achievement, Difficulty, Formation, MatchResult, Squad, TeamEvaluation } from '../types/game';
+import type { Achievement, Difficulty, Formation, MatchResult, TeamEvaluation } from '../types/game';
 import { clamp, round } from '../utils/random';
 
 const opponentNames = [
@@ -103,14 +103,15 @@ const buildCommentary = (teamGoals: number, opponentGoals: number, exactScoreMod
 };
 
 export const simulateMatch = (
-  squad: Squad,
   formation: Formation,
   evaluation: TeamEvaluation,
   difficulty: Difficulty,
   exactScoreMode: boolean,
 ): MatchResult => {
   const opponentStrength = clamp(
-    difficulty.opponentStrength + (100 - squad.baseStrength) * 0.12 + (formation.shapeBias === 'front-foot' ? 1.5 : 0),
+    difficulty.opponentStrength +
+      (100 - evaluation.starPower) * 0.12 +
+      (formation.shapeBias === 'front-foot' ? 1.5 : 0),
     68,
     95,
   );
@@ -154,10 +155,10 @@ export const simulateMatch = (
     },
     summary:
       outcome === 'win'
-        ? `${squad.country} ${squad.year} fantasy XI wins the simulation.`
+        ? 'Your Dream XI wins the simulation.'
         : outcome === 'draw'
-          ? `${squad.country} ${squad.year} fantasy XI is held after a chaotic tactical argument.`
-          : `${squad.country} ${squad.year} fantasy XI loses the simulation.`,
+          ? 'Your Dream XI is held after a chaotic tactical argument.'
+          : 'Your Dream XI loses the simulation.',
     reasons,
     commentary: buildCommentary(teamGoals, opponentGoals, exactScoreMode),
   };

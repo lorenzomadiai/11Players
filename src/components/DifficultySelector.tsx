@@ -8,12 +8,14 @@ interface DifficultySelectorProps {
 }
 
 export default function DifficultySelector({ difficultyId, onChange }: DifficultySelectorProps) {
+  const selected = difficulties.find((difficulty) => difficulty.id === difficultyId);
+
   return (
-    <section className="difficulty-panel" aria-label="Difficulty level">
-      <div className="section-heading">
-        <ShieldCheck size={18} />
-        <h2>Difficulty</h2>
-      </div>
+    <div className="difficulty-inline" aria-label="Difficulty level">
+      <span className="difficulty-inline__label">
+        <ShieldCheck size={15} />
+        Difficulty
+      </span>
       <div className="segmented-control">
         {difficulties.map((difficulty) => (
           <button
@@ -27,7 +29,7 @@ export default function DifficultySelector({ difficultyId, onChange }: Difficult
           </button>
         ))}
       </div>
-      <p>{difficulties.find((difficulty) => difficulty.id === difficultyId)?.description}</p>
-    </section>
+      <p className="difficulty-inline__hint">{selected?.description}</p>
+    </div>
   );
 }
