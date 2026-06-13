@@ -67,11 +67,13 @@ export default function GamePage({
   };
 
   // The placement stays provisional; bring the banner back into view so Continue Draft is visible.
+  // Defer to the next frame: the placement re-render replaces the pitch DOM on this tick and would
+  // otherwise cancel a smooth scroll started synchronously here.
   const placePending = (slotId: string) => {
     if (pendingPlayer) {
       onPlacePlayer(slotId, pendingPlayer);
       setPendingPlayer(null);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      requestAnimationFrame(() => window.scrollTo({ top: 0, behavior: 'smooth' }));
     }
   };
 
