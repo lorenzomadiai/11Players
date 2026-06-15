@@ -1,5 +1,5 @@
 import type { Achievement, Difficulty, Formation, MatchResult, TeamEvaluation } from '../types/game';
-import { clamp, round } from '../utils/random';
+import { clamp, round, type RandomSource } from '../utils/random';
 
 const opponentNames = [
   'a tournament superteam',
@@ -9,10 +9,10 @@ const opponentNames = [
   'a team that somehow has three left backs',
 ];
 
-const pickOpponent = () => opponentNames[Math.floor(Math.random() * opponentNames.length)];
+const pickOpponent = (rng: RandomSource) => opponentNames[Math.floor(rng() * opponentNames.length)];
 
-const goalsFromExpected = (expected: number, maxGoals: number) => {
-  const noise = Math.random() * 1.15 - 0.32;
+const goalsFromExpected = (expected: number, maxGoals: number, rng: RandomSource) => {
+  const noise = rng() * 1.15 - 0.32;
   const raw = expected + noise;
   return Math.round(clamp(raw, 0, maxGoals));
 };
@@ -59,6 +59,10 @@ const buildReasons = (evaluation: TeamEvaluation, difficulty: Difficulty, exactS
     reasons.push('Chemistry dragged the tempo down and a few passes arrived with an apology note.');
   }
 
+  if (exactScoreMode) {
+    reasons.push('Score target mode encouraged extra risk while chasing the exact 7-0 finish.');
+  }
+
   if (evaluation.tacticalFit < 65) {
     reasons.push('Tactical mismatch penalties opened gaps between the formation and the players selected.');
   } else if (evaluation.tacticalFit >= 82) {
@@ -75,10 +79,6 @@ const buildReasons = (evaluation: TeamEvaluation, difficulty: Difficulty, exactS
 
   if (difficulty.id === 'expert') {
     reasons.push('Expert difficulty raised the opponent floor and punished awkward role choices.');
-  }
-
-  if (exactScoreMode) {
-    reasons.push('Score target mode encouraged extra risk while chasing the exact 7-0 finish.');
   }
 
   return reasons.slice(0, 5);
@@ -107,6 +107,7 @@ export const simulateMatch = (
   evaluation: TeamEvaluation,
   difficulty: Difficulty,
   exactScoreMode: boolean,
+  rng: RandomSource = Math.random,
 ): MatchResult => {
   const opponentStrength = clamp(
     difficulty.opponentStrength +
@@ -115,7 +116,7 @@ export const simulateMatch = (
     68,
     95,
   );
-  const randomSwing = round((Math.random() * 2 - 1) * difficulty.randomness, 1);
+  const randomSwing = round((rng() * 2 - 1) * difficulty.randomness, 1);
   const targetRisk = exactScoreMode ? 0.55 : 0;
   const teamPower =
     evaluation.overall +
@@ -133,8 +134,8 @@ export const simulateMatch = (
 
   const teamExpected = clamp(1.15 + (teamPower - 70) / 14 + (evaluation.attack - 75) / 28 + targetRisk, 0.2, 7.8);
   const opponentExpected = clamp(0.75 + (opponentPower - evaluation.defense) / 18 + targetRisk * 0.6, 0.1, 5.5);
-  const teamGoals = goalsFromExpected(teamExpected, exactScoreMode ? 8 : 6);
-  const opponentGoals = goalsFromExpected(opponentExpected, 5);
+  const teamGoals = goalsFromExpected(teamExpected, exactScoreMode ? 8 : 6, rng);
+  const opponentGoals = goalsFromExpected(opponentExpected, 5, rng);
   const outcome = teamGoals > opponentGoals ? 'win' : teamGoals === opponentGoals ? 'draw' : 'loss';
   const reasons = buildReasons(evaluation, difficulty, exactScoreMode);
 
@@ -142,7 +143,7 @@ export const simulateMatch = (
     teamGoals,
     opponentGoals,
     outcome,
-    opponentName: pickOpponent(),
+    opponentName: pickOpponent(rng),
     stats: {
       attack: evaluation.attack,
       midfield: evaluation.midfield,
