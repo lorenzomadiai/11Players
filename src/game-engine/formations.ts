@@ -1,4 +1,4 @@
-import type { Formation } from '../types/game';
+import type { Formation, LineupSelection } from '../types/game';
 
 export const formations: Formation[] = [
   {
@@ -86,7 +86,7 @@ export const formations: Formation[] = [
 export const getFormationById = (id: string) => formations.find((formation) => formation.id === id);
 
 export const createEmptyLineup = (formation: Formation) =>
-  formation.slots.reduce<Record<string, string | null>>((lineup, slot) => {
+  formation.slots.reduce<LineupSelection>((lineup, slot) => {
     lineup[slot.id] = null;
     return lineup;
   }, {});

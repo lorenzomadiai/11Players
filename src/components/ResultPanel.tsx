@@ -1,21 +1,20 @@
 import { RefreshCw, Shuffle, Trophy } from 'lucide-react';
-import type { MatchResult, Squad } from '../types/game';
+import type { MatchResult } from '../types/game';
 import AchievementBadges from './AchievementBadges';
 import StatBar from './StatBar';
 
 interface ResultPanelProps {
   result: MatchResult;
-  squad: Squad;
   onReplay: () => void;
   onNewDraw: () => void;
 }
 
-export default function ResultPanel({ result, squad, onReplay, onNewDraw }: ResultPanelProps) {
+export default function ResultPanel({ result, onReplay, onNewDraw }: ResultPanelProps) {
   return (
     <section className="result-panel">
       <div className="result-score">
         <div>
-          <span>{squad.country} XI</span>
+          <span>Your Dream XI</span>
           <strong>{result.teamGoals}</strong>
         </div>
         <span>vs</span>

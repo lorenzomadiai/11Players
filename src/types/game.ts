@@ -18,6 +18,8 @@ export type RoleGroup = 'goalkeeper' | 'defense' | 'midfield' | 'attack';
 
 export type DifficultyId = 'casual' | 'classic' | 'expert';
 
+export type TeamStyle = 'defensive' | 'balanced' | 'attacking';
+
 export interface PlayerStats {
   pace: number;
   shooting: number;
@@ -91,7 +93,8 @@ export interface Difficulty {
   mismatchMultiplier: number;
 }
 
-export type LineupSelection = Record<string, string | null>;
+/** Each slot stores a full player snapshot, since every pick comes from a different drawn squad. */
+export type LineupSelection = Record<string, Player | null>;
 
 export interface SlotReport {
   slotId: string;
@@ -156,10 +159,14 @@ export interface MatchResult {
 }
 
 export interface PersistedGameState {
-  phase: 'landing' | 'selection' | 'result';
+  phase: 'landing' | 'setup' | 'selection' | 'result';
   draw: GameDraw | null;
   lineup: LineupSelection;
+  /** Slot holding the provisional pick from the current draw; removable until Continue Draft locks it. */
+  pendingSlotId: string | null;
   difficultyId: DifficultyId;
+  teamStyle: TeamStyle;
+  rerollsLeft: number;
   exactScoreMode: boolean;
   theme: 'dark' | 'light';
   result: MatchResult | null;

@@ -1,4 +1,4 @@
-import { Moon, RotateCcw, Sun } from 'lucide-react';
+import { Moon, Sun } from 'lucide-react';
 
 interface AppHeaderProps {
   theme: 'dark' | 'light';
@@ -11,18 +11,15 @@ export default function AppHeader({ theme, onThemeToggle, onReset }: AppHeaderPr
 
   return (
     <header className="app-header">
-      <div className="brand-lockup">
+      <button className="brand-lockup" type="button" onClick={onReset} title="Back to home">
         <span className="brand-mark">XI</span>
         <div>
           <p className="eyebrow">Fantasy tournament sandbox</p>
           <h1>Dream World Cup XI</h1>
         </div>
-      </div>
+      </button>
 
       <div className="header-actions">
-        <button className="icon-button" type="button" onClick={onReset} aria-label="Reset game" title="Reset game">
-          <RotateCcw size={18} />
-        </button>
         <button
           className="icon-button"
           type="button"

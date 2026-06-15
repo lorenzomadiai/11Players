@@ -1,4 +1,4 @@
-import type { Position, RoleGroup } from '../types/game';
+import type { Formation, FormationSlot, LineupSelection, Player, Position, RoleGroup } from '../types/game';
 
 const positionGroups: Record<Position, RoleGroup> = {
   GK: 'goalkeeper',
@@ -29,3 +29,10 @@ export const isWideProfile = (positions: Position[]) =>
 
 export const isCentralProfile = (positions: Position[]) =>
   positions.some((position) => ['CB', 'DM', 'CM', 'AM', 'ST', 'GK'].includes(position));
+
+export const playerFitsSlot = (slot: FormationSlot, player: Player) =>
+  player.positions.some((position) => slot.acceptedPositions.includes(position));
+
+/** True while at least one empty formation slot still accepts one of the player's positions. */
+export const hasOpenCompatibleSlot = (formation: Formation, lineup: LineupSelection, player: Player) =>
+  formation.slots.some((slot) => !lineup[slot.id] && playerFitsSlot(slot, player));

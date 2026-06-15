@@ -1,40 +1,28 @@
-import { Shirt, X } from 'lucide-react';
-import type { Formation, LineupSelection, Player, SlotReport, Squad } from '../types/game';
+import { forwardRef } from 'react';
+import { X } from 'lucide-react';
+import { playerFitsSlot } from '../game-engine/positions';
+import type { Formation, LineupSelection, Player } from '../types/game';
 
 interface PitchProps {
   formation: Formation;
-  squad: Squad;
   lineup: LineupSelection;
-  activeSlotId: string;
-  slotReports: SlotReport[];
-  onSlotSelect: (slotId: string) => void;
-  onClearSlot: (slotId: string) => void;
+  pendingPlayer: Player | null;
+  provisionalSlotId: string | null;
+  onPlacePending: (slotId: string) => void;
+  onRemoveProvisional: () => void;
 }
 
-export default function Pitch({
-  formation,
-  squad,
-  lineup,
-  activeSlotId,
-  slotReports,
-  onSlotSelect,
-  onClearSlot,
-}: PitchProps) {
-  const reportBySlot = Object.fromEntries(slotReports.map((report) => [report.slotId, report]));
-
-  const getPlayer = (slotId: string): Player | undefined => {
-    const playerId = lineup[slotId];
-    return squad.players.find((player) => player.id === playerId);
-  };
-
+const Pitch = forwardRef<HTMLElement, PitchProps>(function Pitch(
+  { formation, lineup, pendingPlayer, provisionalSlotId, onPlacePending, onRemoveProvisional },
+  ref,
+) {
   return (
-    <section className="pitch-shell" aria-label={`${formation.name} pitch`}>
+    <section className="pitch-shell" aria-label={`${formation.name} pitch`} ref={ref}>
       <div className="pitch-meta">
-        <div>
-          <p className="eyebrow">Formation</p>
-          <h2>{formation.name}</h2>
-        </div>
-        <span>{formation.nickname}</span>
+        <h2>{formation.name}</h2>
+        <span>
+          {pendingPlayer ? `Place ${pendingPlayer.name} on a highlighted spot` : 'Pick a player from the squad above'}
+        </span>
       </div>
 
       <div className="pitch">
@@ -42,46 +30,57 @@ export default function Pitch({
         <div className="pitch__box pitch__box--top" />
         <div className="pitch__box pitch__box--bottom" />
         {formation.slots.map((slot) => {
-          const player = getPlayer(slot.id);
-          const report = reportBySlot[slot.id];
-          const isActive = slot.id === activeSlotId;
-          const fitClass = player && report?.compatibility < 0.6 ? 'slot-card--warning' : '';
+          const player = lineup[slot.id] ?? null;
+          // The provisional slot can be re-targeted: placing there swaps the try-out player.
+          const treatAsEmpty = !player || slot.id === provisionalSlotId;
+          const isTarget = Boolean(pendingPlayer && treatAsEmpty && playerFitsSlot(slot, pendingPlayer));
+          const isProvisional = Boolean(player && slot.id === provisionalSlotId);
 
           return (
             <div
               key={slot.id}
-              className={`slot-card ${isActive ? 'slot-card--active' : ''} ${player ? 'slot-card--filled' : ''} ${fitClass}`}
+              className={`slot-card ${player ? 'slot-card--filled' : ''} ${isTarget ? 'slot-card--target' : ''} ${
+                isProvisional ? 'slot-card--provisional' : ''
+              }`}
               style={{ left: `${slot.x}%`, top: `${slot.y}%` }}
             >
-              <button type="button" onClick={() => onSlotSelect(slot.id)} title={`Select ${slot.label}`}>
-                <span className="slot-card__position">{slot.label}</span>
-                {player ? (
-                  <>
-                    <strong>{player.name}</strong>
-                    <small>#{player.shirtNumber} - {player.rating}</small>
-                  </>
-                ) : (
-                  <>
-                    <Shirt size={20} />
-                    <strong>Pick player</strong>
-                  </>
-                )}
-              </button>
-              {player ? (
+              {isProvisional ? (
                 <button
-                  className="slot-card__clear"
                   type="button"
-                  onClick={() => onClearSlot(slot.id)}
-                  aria-label={`Clear ${slot.label}`}
-                  title={`Clear ${slot.label}`}
+                  className="slot-card__undo"
+                  aria-label={`Remove ${player?.name}`}
+                  title="Try another player instead"
+                  onClick={onRemoveProvisional}
                 >
                   <X size={13} />
                 </button>
               ) : null}
+              <button
+                type="button"
+                disabled={!isTarget}
+                onClick={() => {
+                  if (isTarget) {
+                    onPlacePending(slot.id);
+                  }
+                }}
+                title={isTarget ? `Place at ${slot.label}` : slot.label}
+              >
+                <span className="slot-card__position">{slot.label}</span>
+                {player ? (
+                  <>
+                    <strong>{player.name}</strong>
+                    <small>{player.rating}</small>
+                  </>
+                ) : (
+                  <strong className="slot-card__empty">{isTarget ? 'Place here' : 'Empty'}</strong>
+                )}
+              </button>
             </div>
           );
         })}
       </div>
     </section>
   );
-}
+});
+
+export default Pitch;

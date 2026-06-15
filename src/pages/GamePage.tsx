@@ -1,98 +1,146 @@
-import { useEffect, useMemo, useState } from 'react';
-import DrawPanel from '../components/DrawPanel';
-import EvaluationPanel from '../components/EvaluationPanel';
+import { useMemo, useRef, useState } from 'react';
+import { ArrowDown } from 'lucide-react';
+import DraftBanner from '../components/DraftBanner';
 import Pitch from '../components/Pitch';
-import PlayerPool from '../components/PlayerPool';
 import ResultPanel from '../components/ResultPanel';
+import SelectedXI from '../components/SelectedXI';
+import SquadList from '../components/SquadList';
 import { getDifficultyById } from '../game-engine/difficulty';
 import { evaluateLineup } from '../game-engine/evaluation';
-import type { DifficultyId, Formation, GameDraw, LineupSelection, MatchResult, Squad } from '../types/game';
+import type { DifficultyId, Formation, GameDraw, LineupSelection, MatchResult, Player, Squad } from '../types/game';
 
 interface GamePageProps {
   draw: GameDraw;
   squad: Squad;
   formation: Formation;
   lineup: LineupSelection;
+  pendingSlotId: string | null;
   difficultyId: DifficultyId;
   exactScoreMode: boolean;
+  rerollsLeft: number;
   result: MatchResult | null;
-  onSelectPlayer: (slotId: string, playerId: string) => void;
-  onClearSlot: (slotId: string) => void;
+  onPlacePlayer: (slotId: string, player: Player) => void;
+  onRemoveProvisional: () => void;
+  onContinueDraft: () => void;
   onSimulate: () => void;
   onReplay: () => void;
   onNewDraw: () => void;
+  onChangeTeam: () => void;
+  onChangeYear: () => void;
 }
 
-const getNextEmptySlot = (formation: Formation, lineup: LineupSelection, currentSlotId: string) => {
-  const currentIndex = formation.slots.findIndex((slot) => slot.id === currentSlotId);
-  const orderedSlots = [...formation.slots.slice(currentIndex + 1), ...formation.slots.slice(0, currentIndex + 1)];
-  return orderedSlots.find((slot) => !lineup[slot.id])?.id ?? currentSlotId;
-};
-
 export default function GamePage({
-  draw,
   squad,
   formation,
   lineup,
+  pendingSlotId,
   difficultyId,
-  exactScoreMode,
+  rerollsLeft,
   result,
-  onSelectPlayer,
-  onClearSlot,
+  draw,
+  onPlacePlayer,
+  onRemoveProvisional,
+  onContinueDraft,
   onSimulate,
   onReplay,
   onNewDraw,
+  onChangeTeam,
+  onChangeYear,
 }: GamePageProps) {
-  const [activeSlotId, setActiveSlotId] = useState(formation.slots[0].id);
+  const [pendingPlayer, setPendingPlayer] = useState<Player | null>(null);
+  const pitchRef = useRef<HTMLElement>(null);
+  const squadRef = useRef<HTMLElement>(null);
+
   const difficulty = getDifficultyById(difficultyId);
   const evaluation = useMemo(
-    () => evaluateLineup(squad, formation, lineup, difficulty, draw.challengeId),
-    [squad, formation, lineup, difficulty, draw.challengeId],
+    () => evaluateLineup(formation, lineup, difficulty, draw.challengeId),
+    [formation, lineup, difficulty, draw.challengeId],
   );
-  const activeSlot = formation.slots.find((slot) => slot.id === activeSlotId) ?? formation.slots[0];
 
-  useEffect(() => {
-    if (!formation.slots.some((slot) => slot.id === activeSlotId)) {
-      setActiveSlotId(formation.slots[0].id);
+  const pickPlayer = (player: Player) => {
+    if (pendingPlayer?.id === player.id) {
+      setPendingPlayer(null);
+      return;
     }
-  }, [activeSlotId, formation]);
+    setPendingPlayer(player);
+    pitchRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
 
-  const handlePlayerSelect = (playerId: string) => {
-    onSelectPlayer(activeSlot.id, playerId);
-    const optimisticLineup = { ...lineup, [activeSlot.id]: playerId };
-    setActiveSlotId(getNextEmptySlot(formation, optimisticLineup, activeSlot.id));
+  // The placement stays provisional; bring the banner back into view so Continue Draft is visible.
+  // Defer to the next frame: the placement re-render replaces the pitch DOM on this tick and would
+  // otherwise cancel a smooth scroll started synchronously here.
+  const placePending = (slotId: string) => {
+    if (pendingPlayer) {
+      onPlacePlayer(slotId, pendingPlayer);
+      setPendingPlayer(null);
+      requestAnimationFrame(() => window.scrollTo({ top: 0, behavior: 'smooth' }));
+    }
+  };
+
+  // Undoing the provisional pick sends the user back to the squad list to try someone else.
+  const removeProvisional = () => {
+    onRemoveProvisional();
+    setPendingPlayer(null);
+    squadRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
+  // Locks the pick, spins the next draw, and lands the user on the new squad list.
+  const continueDraft = () => {
+    onContinueDraft();
+    setPendingPlayer(null);
+    squadRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
   return (
     <main className="game-page">
-      <DrawPanel
-        draw={draw}
+      <DraftBanner
         squad={squad}
-        formation={formation}
-        difficulty={difficulty}
-        exactScoreMode={exactScoreMode}
-        onNewDraw={onNewDraw}
+        rerollsLeft={rerollsLeft}
+        canReroll={pendingSlotId === null}
+        onChangeTeam={onChangeTeam}
+        onChangeYear={onChangeYear}
       />
 
-      <div className="game-stage">
-        <Pitch
-          formation={formation}
-          squad={squad}
-          lineup={lineup}
-          activeSlotId={activeSlot.id}
-          slotReports={evaluation.slotReports}
-          onSlotSelect={setActiveSlotId}
-          onClearSlot={onClearSlot}
-        />
+      {result ? (
+        <ResultPanel result={result} onReplay={onReplay} onNewDraw={onNewDraw} />
+      ) : (
+        <>
+          {!evaluation.isComplete ? (
+            <button
+              className="continue-draft"
+              type="button"
+              disabled={pendingSlotId === null}
+              title={pendingSlotId === null ? 'Place a player on the pitch first' : 'Lock this pick and draw the next team'}
+              onClick={continueDraft}
+            >
+              <ArrowDown size={15} />
+              Continue Draft
+            </button>
+          ) : null}
 
-        {result ? (
-          <ResultPanel result={result} squad={squad} onReplay={onReplay} onNewDraw={onNewDraw} />
-        ) : (
-          <PlayerPool squad={squad} activeSlot={activeSlot} lineup={lineup} onSelectPlayer={handlePlayerSelect} />
-        )}
-      </div>
+          <SquadList
+            ref={squadRef}
+            squad={squad}
+            formation={formation}
+            lineup={lineup}
+            provisionalSlotId={pendingSlotId}
+            pendingPlayerId={pendingPlayer?.id ?? null}
+            onPickPlayer={pickPlayer}
+          />
 
-      <EvaluationPanel evaluation={evaluation} onSimulate={onSimulate} />
+          <Pitch
+            ref={pitchRef}
+            formation={formation}
+            lineup={lineup}
+            pendingPlayer={pendingPlayer}
+            provisionalSlotId={pendingSlotId}
+            onPlacePending={placePending}
+            onRemoveProvisional={removeProvisional}
+          />
+
+          <SelectedXI formation={formation} lineup={lineup} evaluation={evaluation} onSimulate={onSimulate} />
+        </>
+      )}
     </main>
   );
 }

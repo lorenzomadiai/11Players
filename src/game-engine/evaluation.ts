@@ -7,7 +7,6 @@ import type {
   LineupSelection,
   Player,
   SlotReport,
-  Squad,
   TeamEvaluation,
 } from '../types/game';
 import { clamp, round } from '../utils/random';
@@ -17,15 +16,13 @@ import { getPositionGroup, isCentralProfile, isWideProfile } from './positions';
 const average = (values: number[], fallback = 0) =>
   values.length ? values.reduce((total, value) => total + value, 0) / values.length : fallback;
 
-export const getSelectedPlayers = (squad: Squad, formation: Formation, lineup: LineupSelection) =>
-  formation.slots
-    .map((slot) => squad.players.find((player) => player.id === lineup[slot.id]))
-    .filter((player): player is Player => Boolean(player));
+export const getSelectedPlayers = (formation: Formation, lineup: LineupSelection) =>
+  formation.slots.map((slot) => lineup[slot.id]).filter((player): player is Player => Boolean(player));
 
 const getDuplicatePlayerIds = (lineup: LineupSelection) => {
-  const counts = Object.values(lineup).reduce<Record<string, number>>((acc, playerId) => {
-    if (playerId) {
-      acc[playerId] = (acc[playerId] ?? 0) + 1;
+  const counts = Object.values(lineup).reduce<Record<string, number>>((acc, player) => {
+    if (player) {
+      acc[player.id] = (acc[player.id] ?? 0) + 1;
     }
     return acc;
   }, {});
@@ -57,9 +54,9 @@ export const getPlayerSlotFit = (slot: FormationSlot, player: Player) => {
   return { compatibility: 0.28, message: 'Tactical mismatch' };
 };
 
-const buildSlotReports = (squad: Squad, formation: Formation, lineup: LineupSelection): SlotReport[] =>
+const buildSlotReports = (formation: Formation, lineup: LineupSelection): SlotReport[] =>
   formation.slots.map((slot) => {
-    const player = squad.players.find((item) => item.id === lineup[slot.id]);
+    const player = lineup[slot.id];
 
     if (!player) {
       return {
@@ -115,11 +112,11 @@ const countSameClubPairs = (players: Player[]) => {
 const evaluateChallenge = (challengeId: string, players: Player[]): ChallengeReport =>
   getChallengeById(challengeId).evaluate(players);
 
-const shapeBonus = (formation: Formation, squad: Squad, lineup: LineupSelection) => {
+const shapeBonus = (formation: Formation, lineup: LineupSelection) => {
   let score = 0;
 
   formation.slots.forEach((slot) => {
-    const player = squad.players.find((item) => item.id === lineup[slot.id]);
+    const player = lineup[slot.id];
     if (!player) {
       return;
     }
@@ -144,7 +141,7 @@ const shapeBonus = (formation: Formation, squad: Squad, lineup: LineupSelection)
 };
 
 const buildWarnings = (
-  squad: Squad,
+  selectedPlayers: Player[],
   evaluation: Pick<TeamEvaluation, 'isComplete' | 'duplicatePlayerIds' | 'slotReports' | 'challenge'>,
 ) => {
   const warnings: string[] = [];
@@ -155,7 +152,7 @@ const buildWarnings = (
 
   if (evaluation.duplicatePlayerIds.length > 0) {
     const duplicateNames = evaluation.duplicatePlayerIds
-      .map((id) => squad.players.find((player) => player.id === id)?.name ?? id)
+      .map((id) => selectedPlayers.find((player) => player.id === id)?.name ?? id)
       .join(', ');
     warnings.push(`Duplicate player detected: ${duplicateNames}.`);
   }
@@ -221,14 +218,13 @@ const buildAchievements = (
 };
 
 export const evaluateLineup = (
-  squad: Squad,
   formation: Formation,
   lineup: LineupSelection,
   difficulty: Difficulty,
   challengeId: string,
 ): TeamEvaluation => {
-  const slotReports = buildSlotReports(squad, formation, lineup);
-  const selectedPlayers = getSelectedPlayers(squad, formation, lineup);
+  const slotReports = buildSlotReports(formation, lineup);
+  const selectedPlayers = getSelectedPlayers(formation, lineup);
   const duplicatePlayerIds = getDuplicatePlayerIds(lineup);
   const isComplete = selectedPlayers.length === 11 && duplicatePlayerIds.length === 0;
   const filledSlots = selectedPlayers.length;
@@ -240,7 +236,7 @@ export const evaluateLineup = (
   const attackScores: number[] = [];
 
   formation.slots.forEach((slot) => {
-    const player = squad.players.find((item) => item.id === lineup[slot.id]);
+    const player = lineup[slot.id];
     if (!player) {
       return;
     }
@@ -275,7 +271,7 @@ export const evaluateLineup = (
     round(34 + averageCompatibility * 27 + sameClubBonus + sameEraBonus + leadershipBonus - duplicatePenalty - challenge.penalty * 0.35, 1),
   );
   const tacticalFit = clamp(
-    round(averageCompatibility * 82 + shapeBonus(formation, squad, lineup) - mismatchPenalty - challenge.penalty * 0.3, 1),
+    round(averageCompatibility * 82 + shapeBonus(formation, lineup) - mismatchPenalty - challenge.penalty * 0.3, 1),
   );
   const legendBoost = selectedPlayers.filter((player) => player.isLegend).length * 3.2;
   const starPower = clamp(round(average(selectedPlayers.map((player) => player.rating), 0) * 0.74 + legendBoost, 1));
@@ -309,7 +305,7 @@ export const evaluateLineup = (
     starPower,
     overall,
     challenge,
-    warnings: buildWarnings(squad, partialEvaluation),
+    warnings: buildWarnings(selectedPlayers, partialEvaluation),
     achievements,
   };
 };
