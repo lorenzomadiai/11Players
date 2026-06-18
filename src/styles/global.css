@@ -698,7 +698,7 @@ p {
 
 /* One-shot attention glow, fired when a player is placed on the pitch. */
 .continue-draft.is-glowing {
-  animation: continue-glow 1100ms ease-out;
+  animation: continue-glow 3000ms ease-out;
 }
 
 @keyframes continue-glow {
