@@ -48,6 +48,7 @@ export default function GamePage({
   onChangeYear,
 }: GamePageProps) {
   const [pendingPlayer, setPendingPlayer] = useState<Player | null>(null);
+  const [glowing, setGlowing] = useState(false);
   const pitchRef = useRef<HTMLElement>(null);
   const squadRef = useRef<HTMLElement>(null);
 
@@ -73,7 +74,13 @@ export default function GamePage({
     if (pendingPlayer) {
       onPlacePlayer(slotId, pendingPlayer);
       setPendingPlayer(null);
-      requestAnimationFrame(() => window.scrollTo({ top: 0, behavior: 'smooth' }));
+      // Drop the glow class now and re-add it next frame so the one-shot animation
+      // replays even when a second player is placed before the first glow finishes.
+      setGlowing(false);
+      requestAnimationFrame(() => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        setGlowing(true);
+      });
     }
   };
 
@@ -107,11 +114,12 @@ export default function GamePage({
         <>
           {!evaluation.isComplete ? (
             <button
-              className="continue-draft"
+              className={`continue-draft${glowing ? ' is-glowing' : ''}`}
               type="button"
               disabled={pendingSlotId === null}
               title={pendingSlotId === null ? 'Place a player on the pitch first' : 'Lock this pick and draw the next team'}
               onClick={continueDraft}
+              onAnimationEnd={() => setGlowing(false)}
             >
               <ArrowDown size={15} />
               Continue Draft

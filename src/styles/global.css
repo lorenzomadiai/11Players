@@ -696,6 +696,32 @@ p {
   cursor: not-allowed;
 }
 
+/* One-shot attention glow, fired when a player is placed on the pitch. */
+.continue-draft.is-glowing {
+  animation: continue-glow 1100ms ease-out;
+}
+
+@keyframes continue-glow {
+  0% {
+    box-shadow: 0 0 0 0 rgba(207, 232, 212, 0);
+    filter: brightness(1);
+  }
+  18% {
+    box-shadow: 0 0 22px 5px rgba(233, 255, 240, 0.9);
+    filter: brightness(1.18);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(207, 232, 212, 0);
+    filter: brightness(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .continue-draft.is-glowing {
+    animation: none;
+  }
+}
+
 /* squad list */
 
 .squad-list {
