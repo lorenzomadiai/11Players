@@ -438,8 +438,17 @@ p {
 .hero-pitch,
 .setup-pitch {
   position: relative;
+  /* Keep the decorative pitch a portrait rectangle (never a box) inside the
+     fixed-height landing/setup shells: height fills the cell, width follows the
+     3:4 ratio, capped to the cell and centered. */
+  aspect-ratio: 3 / 4;
   height: 100%;
+  width: auto;
+  max-width: 100%;
   min-height: 0;
+  margin-inline: auto;
+  /* Act as a query container so the position labels scale with the pitch. */
+  container-type: inline-size;
   overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.16);
   border-radius: 8px;
@@ -489,15 +498,18 @@ p {
   position: absolute;
   z-index: 2;
   display: grid;
-  width: 52px;
-  height: 40px;
+  /* Scale with the pitch (cqw = 1% of pitch width) so the labels shrink as the
+     pitch shrinks, instead of staying a fixed size. */
+  width: 13cqw;
+  min-width: 30px;
   place-items: center;
+  padding: 0.4em 0.3em;
   transform: translate(-50%, -50%);
   border: 1px solid rgba(255, 255, 255, 0.35);
   border-radius: 8px;
   color: var(--ink);
   background: #f3eeda;
-  font-size: 0.78rem;
+  font-size: clamp(0.5rem, 3cqw, 0.78rem);
   font-weight: 900;
 }
 
@@ -867,7 +879,13 @@ p {
 
 .pitch {
   position: relative;
-  height: clamp(390px, 56vh, 540px);
+  /* Always a portrait rectangle, never a box: lock the proportions and let the
+     width drive the height. If it can't fit the viewport, the page scrolls. */
+  aspect-ratio: 3 / 4;
+  width: 100%;
+  max-width: 420px;
+  height: auto;
+  margin-inline: auto;
   overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.16);
   border-radius: 8px;
@@ -925,7 +943,10 @@ p {
 .slot-card {
   position: absolute;
   z-index: 3;
-  width: 102px;
+  /* Scale with the pitch (fixed aspect ratio) instead of a fixed px width, so the
+     tightest rows — 16% apart — never overlap whatever the pitch size. */
+  width: 15%;
+  min-width: 54px;
   transform: translate(-50%, -50%);
 }
 
@@ -1000,7 +1021,7 @@ p {
 }
 
 .slot-card strong {
-  max-width: 90px;
+  max-width: 100%;
   overflow: hidden;
   font-size: 0.72rem;
   line-height: 1.1;
@@ -1443,21 +1464,13 @@ p {
     max-height: min(48vh, 430px);
   }
 
-  .pitch {
-    height: clamp(340px, 52vh, 480px);
-  }
-
-  .slot-card {
-    width: 76px;
-  }
-
   .slot-card > button {
     min-height: 50px;
     padding: 4px;
   }
 
   .slot-card strong {
-    max-width: 64px;
+    max-width: 100%;
     font-size: 0.62rem;
   }
 
