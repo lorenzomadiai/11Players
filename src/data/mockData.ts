@@ -1,4 +1,5 @@
 import type { Player, Squad } from '../types/game';
+import { expandedSquads } from './expandedSquads';
 
 type PlayerSeed = Omit<Player, 'countryCode' | 'worldCupYear' | 'eraGroup'>;
 
@@ -10,7 +11,7 @@ const makePlayers = (countryCode: string, worldCupYear: number, eraGroup: string
     eraGroup,
   }));
 
-export const squads: Squad[] = [
+const baseSquads: Squad[] = [
   {
     id: 'bra-2002',
     countryCode: 'BRA',
@@ -776,5 +777,7 @@ export const squads: Squad[] = [
     ]),
   },
 ];
+
+export const squads: Squad[] = [...baseSquads, ...expandedSquads];
 
 export const getSquadById = (id: string) => squads.find((squad) => squad.id === id);

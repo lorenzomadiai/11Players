@@ -6,8 +6,9 @@ const validPositions: Position[] = ['GK', 'LB', 'CB', 'RB', 'LWB', 'RWB', 'DM', 
 
 describe('squad data invariants', () => {
   it('keeps squad and player ids unique and resolvable', () => {
-    expect(squads.length).toBeGreaterThan(0);
+    expect(squads.length).toBeGreaterThanOrEqual(32);
     expect(new Set(squads.map((squad) => squad.id)).size).toBe(squads.length);
+    expect(new Set(squads.map((squad) => squad.countryCode)).size).toBeGreaterThanOrEqual(32);
 
     const allPlayerIds = squads.flatMap((squad) => squad.players.map((player) => player.id));
     expect(new Set(allPlayerIds).size).toBe(allPlayerIds.length);
@@ -16,6 +17,12 @@ describe('squad data invariants', () => {
       expect(getSquadById(squad.id)).toBe(squad);
       expect(new Set(squad.players.map((player) => player.id)).size).toBe(squad.players.length);
     });
+  });
+
+  it('keeps a varied strength spread for tournament-style draws', () => {
+    expect(squads.some((squad) => squad.baseStrength >= 88)).toBe(true);
+    expect(squads.some((squad) => squad.baseStrength >= 80 && squad.baseStrength < 88)).toBe(true);
+    expect(squads.some((squad) => squad.baseStrength < 80)).toBe(true);
   });
 
   it('keeps every squad large enough and every player inside valid rating/stat/position bounds', () => {
@@ -39,4 +46,3 @@ describe('squad data invariants', () => {
     });
   });
 });
-
