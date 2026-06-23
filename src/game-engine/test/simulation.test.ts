@@ -1,16 +1,15 @@
 import { describe, expect, it } from 'vitest';
 import { evaluateLineup } from '../evaluation';
 import { simulateMatch } from '../simulation';
-import { brazil433Lineup, requireDifficulty, requireFormation, requireSquad, sequenceRng } from '../../test/fixtures';
+import { brazil433Lineup, requireDifficulty, requireFormation, sequenceRng } from '../../test/fixtures';
 
 describe('match simulation', () => {
   it('produces reproducible results when the RNG is injected', () => {
-    const squad = requireSquad();
     const formation = requireFormation();
     const difficulty = requireDifficulty();
-    const evaluation = evaluateLineup(squad, formation, brazil433Lineup(), difficulty, 'no-ballon-dor');
+    const evaluation = evaluateLineup(formation, brazil433Lineup(), difficulty, 'no-ballon-dor');
 
-    const result = simulateMatch(squad, formation, evaluation, difficulty, false, sequenceRng([0.5, 0.5, 0.5, 0]));
+    const result = simulateMatch(formation, evaluation, difficulty, false, sequenceRng([0.5, 0.5, 0.5, 0]));
 
     expect(result.stats.randomSwing).toBe(0);
     expect(result.opponentName).toBe('a tournament superteam');
@@ -24,12 +23,11 @@ describe('match simulation', () => {
   });
 
   it('includes target-mode reasoning only when exact score mode is enabled', () => {
-    const squad = requireSquad();
     const formation = requireFormation();
     const difficulty = requireDifficulty('expert');
-    const evaluation = evaluateLineup(squad, formation, brazil433Lineup(), difficulty, 'no-ballon-dor');
+    const evaluation = evaluateLineup(formation, brazil433Lineup(), difficulty, 'no-ballon-dor');
 
-    const result = simulateMatch(squad, formation, evaluation, difficulty, true, sequenceRng([0.4, 0.4, 0.4, 0.4]));
+    const result = simulateMatch(formation, evaluation, difficulty, true, sequenceRng([0.4, 0.4, 0.4, 0.4]));
 
     expect(result.reasons).toContain('Score target mode encouraged extra risk while chasing the exact 7-0 finish.');
     expect(result.stats.opponentStrength).toBeGreaterThanOrEqual(68);
@@ -37,4 +35,3 @@ describe('match simulation', () => {
     expect(result.achievements.some((achievement) => achievement.id === 'target-7-0')).toBe(true);
   });
 });
-

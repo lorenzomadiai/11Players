@@ -1,31 +1,46 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { squads } from '../../data/mockData';
 import { randomItem } from '../../utils/random';
-import { createRandomDraw } from '../draw';
-import { formations } from '../formations';
+import { changeTeamDraw, changeYearDraw, createDraw, nextRandomDraw } from '../draw';
+import { freePlayChallenge } from '../challenges';
 import { sequenceRng } from '../../test/fixtures';
 
 describe('random draw', () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
   it('throws instead of silently drawing from an empty pool', () => {
     expect(() => randomItem([])).toThrow('Cannot pick a random item from an empty array.');
   });
 
-  it('can be reproduced with an injected RNG', () => {
-    const draw = createRandomDraw(sequenceRng([0, 0, 0]));
+  it('creates a free-play draw for the selected formation', () => {
+    vi.spyOn(Math, 'random').mockReturnValue(0);
+
+    const draw = createDraw('433');
 
     expect(draw).toEqual({
       squadId: squads[0].id,
-      formationId: formations[0].id,
-      challengeId: 'no-ballon-dor',
+      formationId: '433',
+      challengeId: freePlayChallenge.id,
     });
   });
 
-  it('uses each RNG pull for squad, formation, and challenge in order', () => {
-    const draw = createRandomDraw(sequenceRng([0.99, 0.99, 0]));
+  it('draws a different squad after a pick while preserving formation and challenge mode', () => {
+    vi.spyOn(Math, 'random').mockReturnValue(0);
 
-    expect(draw.squadId).toBe(squads[squads.length - 1].id);
-    expect(draw.formationId).toBe(formations[formations.length - 1].id);
-    expect(draw.challengeId).toMatch(/^[a-z0-9-]+$/);
+    const draw = nextRandomDraw({ squadId: squads[0].id, formationId: '4231', challengeId: freePlayChallenge.id });
+
+    expect(draw.squadId).not.toBe(squads[0].id);
+    expect(draw.formationId).toBe('4231');
+    expect(draw.challengeId).toBe(freePlayChallenge.id);
+  });
+
+  it('rerolls team or year without spending the selected formation', () => {
+    vi.spyOn(Math, 'random').mockReturnValue(0);
+    const currentDraw = { squadId: squads[0].id, formationId: '352', challengeId: freePlayChallenge.id };
+
+    expect(changeTeamDraw(currentDraw).formationId).toBe('352');
+    expect(changeYearDraw(currentDraw).formationId).toBe('352');
   });
 });
-

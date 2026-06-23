@@ -42,7 +42,7 @@ const SquadList = forwardRef<HTMLElement, SquadListProps>(function SquadList(
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    scrollRef.current?.scrollTo({ top: 0 });
+    scrollRef.current?.scrollTo?.({ top: 0 });
   }, [squad.id]);
 
   return (

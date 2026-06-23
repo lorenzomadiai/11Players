@@ -29,9 +29,8 @@ describe('lineup evaluation', () => {
   });
 
   it('scores a complete lineup and surfaces challenge penalties and achievements', () => {
-    const squad = requireSquad();
     const formation = requireFormation();
-    const evaluation = evaluateLineup(squad, formation, brazil433Lineup(), requireDifficulty(), 'no-ballon-dor');
+    const evaluation = evaluateLineup(formation, brazil433Lineup(), requireDifficulty(), 'no-ballon-dor');
 
     expect(evaluation.filledSlots).toBe(11);
     expect(evaluation.isComplete).toBe(true);
@@ -49,10 +48,10 @@ describe('lineup evaluation', () => {
     const formation = requireFormation();
     const lineup = {
       ...brazil433Lineup(),
-      cb2: 'bra-2002-lucio',
+      cb2: requirePlayer(squad, 'bra-2002-lucio'),
     };
 
-    const evaluation = evaluateLineup(squad, formation, lineup, requireDifficulty(), 'defensive-core');
+    const evaluation = evaluateLineup(formation, lineup, requireDifficulty(), 'defensive-core');
 
     expect(evaluation.filledSlots).toBe(11);
     expect(evaluation.isComplete).toBe(false);
@@ -60,4 +59,3 @@ describe('lineup evaluation', () => {
     expect(evaluation.warnings).toContain('Duplicate player detected: Lucio.');
   });
 });
-
