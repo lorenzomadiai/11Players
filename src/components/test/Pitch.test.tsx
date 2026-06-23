@@ -2,60 +2,74 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import Pitch from '../Pitch';
-import { evaluateLineup } from '../../game-engine/evaluation';
-import { brazil433Lineup, requireDifficulty, requireFormation, requireSquad } from '../../test/fixtures';
+import { createEmptyLineup } from '../../game-engine/formations';
+import { brazil433Lineup, requireFormation, requirePlayer, requireSquad } from '../../test/fixtures';
 
 describe('Pitch', () => {
-  it('renders selected players on their slots and allows clearing them', async () => {
-    const user = userEvent.setup();
-    const squad = requireSquad();
+  it('renders selected players on their slots', () => {
     const formation = requireFormation();
     const lineup = brazil433Lineup();
-    const evaluation = evaluateLineup(squad, formation, lineup, requireDifficulty(), 'no-ballon-dor');
-    const onClearSlot = vi.fn();
 
     render(
       <Pitch
         formation={formation}
-        squad={squad}
         lineup={lineup}
-        activeSlotId="rb"
-        slotReports={evaluation.slotReports}
-        onSlotSelect={vi.fn()}
-        onClearSlot={onClearSlot}
+        pendingPlayer={null}
+        provisionalSlotId={null}
+        onPlacePending={vi.fn()}
+        onRemoveProvisional={vi.fn()}
       />,
     );
 
     expect(screen.getByText('Cafu')).toBeInTheDocument();
-
-    await user.click(screen.getByRole('button', { name: 'Clear RB' }));
-
-    expect(onClearSlot).toHaveBeenCalledWith('rb');
+    expect(screen.getByTitle('RB')).toBeDisabled();
   });
 
-  it('lets the user choose the active slot from the pitch', async () => {
+  it('places a pending player on a compatible open slot', async () => {
     const user = userEvent.setup();
     const squad = requireSquad();
     const formation = requireFormation();
-    const lineup = brazil433Lineup();
-    const evaluation = evaluateLineup(squad, formation, lineup, requireDifficulty(), 'no-ballon-dor');
-    const onSlotSelect = vi.fn();
+    const onPlacePending = vi.fn();
 
     render(
       <Pitch
         formation={formation}
-        squad={squad}
-        lineup={lineup}
-        activeSlotId="gk"
-        slotReports={evaluation.slotReports}
-        onSlotSelect={onSlotSelect}
-        onClearSlot={vi.fn()}
+        lineup={createEmptyLineup(formation)}
+        pendingPlayer={requirePlayer(squad, 'bra-2002-cafu')}
+        provisionalSlotId={null}
+        onPlacePending={onPlacePending}
+        onRemoveProvisional={vi.fn()}
       />,
     );
 
-    await user.click(screen.getByTitle('Select ST'));
+    await user.click(screen.getByTitle('Place at RB'));
 
-    expect(onSlotSelect).toHaveBeenCalledWith('st');
+    expect(onPlacePending).toHaveBeenCalledWith('rb');
+  });
+
+  it('allows removing only the provisional pick', async () => {
+    const user = userEvent.setup();
+    const squad = requireSquad();
+    const formation = requireFormation();
+    const lineup = {
+      ...createEmptyLineup(formation),
+      rb: requirePlayer(squad, 'bra-2002-cafu'),
+    };
+    const onRemoveProvisional = vi.fn();
+
+    render(
+      <Pitch
+        formation={formation}
+        lineup={lineup}
+        pendingPlayer={null}
+        provisionalSlotId="rb"
+        onPlacePending={vi.fn()}
+        onRemoveProvisional={onRemoveProvisional}
+      />,
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Remove Cafu' }));
+
+    expect(onRemoveProvisional).toHaveBeenCalledTimes(1);
   });
 });
-

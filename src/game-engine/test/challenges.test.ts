@@ -1,13 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { getChallengeById } from '../challenges';
-import { brazil433Lineup, requireFormation, requirePlayer, requireSquad } from '../../test/fixtures';
+import { brazil433Lineup, requirePlayer, requireSquad } from '../../test/fixtures';
+import type { Player } from '../../types/game';
 
 describe('challenges', () => {
   it('penalizes Ballon d Or winners when that challenge is active', () => {
-    const squad = requireSquad();
-    const formation = requireFormation();
     const lineup = brazil433Lineup();
-    const players = formation.slots.map((slot) => requirePlayer(squad, lineup[slot.id]!));
+    const players = Object.values(lineup).filter((player): player is Player => player !== null);
 
     const report = getChallengeById('no-ballon-dor').evaluate(players);
 
@@ -63,4 +62,3 @@ describe('challenges', () => {
     expect(challenge.evaluate(noBallonDorPlayers).passed).toBe(true);
   });
 });
-
