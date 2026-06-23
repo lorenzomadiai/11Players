@@ -8,6 +8,7 @@
     "typecheck": "tsc -b",
     "typecheck:test": "tsc -p tsconfig.test.json --noEmit",
     "check:stale-tests": "node scripts/check-stale-test-imports.mjs",
+    "check": "npm run check:stale-tests && npm run build && npm run typecheck:test && npm run test:run",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
     "test": "vitest",

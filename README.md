@@ -20,8 +20,20 @@ http://127.0.0.1:5173/
 ```bash
 npm run dev
 npm run build
+npm run test:run
+npm run typecheck:test
+npm run check:stale-tests
+npm run check
 npm run preview
 ```
+
+## Test guardrails
+
+Use `npm run check` before merging feature branches. It runs the stale-test import detector, production build, test typecheck, and Vitest suite.
+
+When a component or module is deleted, renamed, or split, run `npm run check:stale-tests` first. It reports test files that still import local files that no longer exist.
+
+When behavior or function signatures change, run `npm run typecheck:test`. It typechecks test files too, which catches stale fixtures, old component props, and old engine function calls that `npm run build` intentionally excludes.
 
 ## Version 1 scope
 
