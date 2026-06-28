@@ -4,9 +4,14 @@ These notes record practical modeling assumptions for the 11Players tactical eng
 
 ## Sources Checked
 
-- Sky Sports advanced stats explainer: xG, xGOT, xA, pressures, possessions.
 - Expected goals overview and model notes: common xG inputs, probability interpretation, calibration limits.
-- Academic xG papers on finishing bias and possession-level shot occurrence modeling.
+  https://en.wikipedia.org/wiki/Expected_goals
+- Possession-level shot occurrence/xG research, useful for later simulation-lab calibration.
+  https://arxiv.org/abs/2512.00203
+- Explainable expected-goal model research, useful for making reasons interpretable.
+  https://arxiv.org/abs/2308.15559
+- Shot conversion and goalscoring ability research, useful for cautious finishing-skill modeling.
+  https://arxiv.org/abs/1702.05662
 
 ## Practical Takeaways
 
