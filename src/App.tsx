@@ -5,7 +5,8 @@ import { changeTeamDraw, changeYearDraw, createDraw, nextRandomDraw } from './ga
 import { getDifficultyById } from './game-engine/difficulty';
 import { evaluateLineup } from './game-engine/evaluation';
 import { createEmptyLineup, getFormationById } from './game-engine/formations';
-import { simulateMatch } from './game-engine/simulation';
+import { createTournament } from './game-engine/tournament';
+import { simulateTournament } from './game-engine/tournamentProgression';
 import LandingPage from './pages/LandingPage';
 import SetupPage from './pages/SetupPage';
 import GamePage from './pages/GamePage';
@@ -26,6 +27,7 @@ const initialState: PersistedGameState = {
   exactScoreMode: false,
   theme: 'dark',
   result: null,
+  tournamentResult: null,
 };
 
 export default function App() {
@@ -62,6 +64,7 @@ export default function App() {
       lineup: {},
       pendingSlotId: null,
       result: null,
+      tournamentResult: null,
       rerollsLeft: TOTAL_REROLLS,
     }));
   };
@@ -83,6 +86,7 @@ export default function App() {
       pendingSlotId: null,
       rerollsLeft: TOTAL_REROLLS,
       result: null,
+      tournamentResult: null,
     }));
   };
 
@@ -121,6 +125,7 @@ export default function App() {
       teamStyle: current.teamStyle,
       exactScoreMode: current.exactScoreMode,
       theme: current.theme,
+      tournamentResult: null,
     }));
   };
 
@@ -137,6 +142,7 @@ export default function App() {
       pendingSlotId: null,
       rerollsLeft: TOTAL_REROLLS,
       result: null,
+      tournamentResult: null,
     }));
   };
 
@@ -163,6 +169,7 @@ export default function App() {
         lineup,
         pendingSlotId: slotId,
         result: null,
+        tournamentResult: null,
         phase: 'selection',
       };
     });
@@ -207,12 +214,31 @@ export default function App() {
       ...current,
       phase: 'result',
       pendingSlotId: null,
-      result: simulateMatch(formation, evaluation, difficulty, current.exactScoreMode),
+      result: null,
+      tournamentResult: simulateTournament({
+        tournament: createTournament({
+          // A kickoff seed makes this whole tournament stable once stored,
+          // while each new kickoff still creates a fresh bracket/result set.
+          seed: `demo-${Date.now()}-${current.difficultyId}-${Math.round(evaluation.overall)}`,
+          difficultyId: current.difficultyId,
+          userTeamStrength: Math.round(evaluation.overall),
+        }),
+        // The draft screen owns the user's XI; this is the single adapter that
+        // turns that lineup into the tournament engine's Dream XI team.
+        dreamTeam: {
+          id: 'dream-xi',
+          name: 'Dream XI',
+          formation,
+          lineup: current.lineup,
+          evaluation,
+          style: current.teamStyle,
+        },
+      }),
     }));
   };
 
   const setDifficulty = (difficultyId: DifficultyId) => {
-    setState((current) => ({ ...current, difficultyId, result: null }));
+    setState((current) => ({ ...current, difficultyId, result: null, tournamentResult: null }));
   };
 
   return (
@@ -240,6 +266,7 @@ export default function App() {
           exactScoreMode={state.exactScoreMode}
           rerollsLeft={state.rerollsLeft}
           result={state.result}
+          tournamentResult={state.tournamentResult}
           onPlacePlayer={placePlayer}
           onRemoveProvisional={removeProvisional}
           onContinueDraft={continueDraft}

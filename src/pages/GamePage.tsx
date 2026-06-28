@@ -5,9 +5,19 @@ import Pitch from '../components/Pitch';
 import ResultPanel from '../components/ResultPanel';
 import SelectedXI from '../components/SelectedXI';
 import SquadList from '../components/SquadList';
+import TournamentResultPanel from '../components/TournamentResultPanel';
 import { getDifficultyById } from '../game-engine/difficulty';
 import { evaluateLineup } from '../game-engine/evaluation';
-import type { DifficultyId, Formation, GameDraw, LineupSelection, MatchResult, Player, Squad } from '../types/game';
+import type {
+  DifficultyId,
+  Formation,
+  GameDraw,
+  LineupSelection,
+  MatchResult,
+  Player,
+  Squad,
+  TournamentSimulationResult,
+} from '../types/game';
 
 interface GamePageProps {
   draw: GameDraw;
@@ -19,6 +29,7 @@ interface GamePageProps {
   exactScoreMode: boolean;
   rerollsLeft: number;
   result: MatchResult | null;
+  tournamentResult?: TournamentSimulationResult | null;
   onPlacePlayer: (slotId: string, player: Player) => void;
   onRemoveProvisional: () => void;
   onContinueDraft: () => void;
@@ -37,6 +48,7 @@ export default function GamePage({
   difficultyId,
   rerollsLeft,
   result,
+  tournamentResult = null,
   draw,
   onPlacePlayer,
   onRemoveProvisional,
@@ -108,7 +120,9 @@ export default function GamePage({
         onChangeYear={onChangeYear}
       />
 
-      {result ? (
+      {tournamentResult ? (
+        <TournamentResultPanel result={tournamentResult} onReplay={onReplay} onNewDraw={onNewDraw} />
+      ) : result ? (
         <ResultPanel result={result} onReplay={onReplay} onNewDraw={onNewDraw} />
       ) : (
         <>

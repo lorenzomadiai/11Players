@@ -181,6 +181,7 @@ export interface PersistedGameState {
   exactScoreMode: boolean;
   theme: 'dark' | 'light';
   result: MatchResult | null;
+  tournamentResult: TournamentSimulationResult | null;
 }
 
 export type TournamentTeamKind = 'historical' | 'dream-xi';

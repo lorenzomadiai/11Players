@@ -67,8 +67,10 @@ Status: implemented on `feature/tournament-progression-engine`.
 
 ## Batch 6: Tournament UI
 
-- Show group draw, tables, bracket, next opponent, match timeline, scorers, and result reasons.
-- Keep user match details prominent and other matches readable.
+Status: implemented on `feature/tournament-ui-integration`, pending merge into `feature/tournament-demo-foundation`.
+
+- Show tournament result summary, user group table, knockout bracket, match timeline, scorers, and xG context.
+- Keep user match details prominent while still making the wider tournament readable.
 
 ## Batch 7: Demo Polish
 
