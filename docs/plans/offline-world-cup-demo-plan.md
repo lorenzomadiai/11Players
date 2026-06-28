@@ -54,12 +54,23 @@ Status: implemented on `feature/tactical-match-engine`.
 - Generate chance types, scorers, assists, xG, goal reasons, and key matchup explanations.
 - Support knockout extra time and penalties.
 
-## Batch 5: Tournament UI
+## Batch 5: Tournament Progression Engine
+
+Status: implemented on `feature/tournament-progression-engine`.
+
+- Use tactical match results to simulate group and knockout matches.
+- Calculate group standings from points, goal difference, goals scored, and seeded strength tiebreakers.
+- Generate Round of 16, Quarter Final, Semi Final, and Final fixtures.
+- Track stage reached for every team.
+- Aggregate goals, xG, and xA-style creator credit for future reporting.
+- Start difficulty-sensitive tournament setup while preserving group draw rules.
+
+## Batch 6: Tournament UI
 
 - Show group draw, tables, bracket, next opponent, match timeline, scorers, and result reasons.
 - Keep user match details prominent and other matches readable.
 
-## Batch 6: Demo Polish
+## Batch 7: Demo Polish
 
 - Balance match numbers.
 - Verify mobile and desktop layouts.

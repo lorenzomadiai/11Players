@@ -1,5 +1,5 @@
 import { squads } from '../data/mockData';
-import type { Confederation, Squad, TournamentGroup, TournamentMatch, TournamentState, TournamentTeam } from '../types/game';
+import type { Confederation, DifficultyId, Squad, TournamentGroup, TournamentMatch, TournamentState, TournamentTeam } from '../types/game';
 import type { RandomSource } from '../utils/random';
 import { createSeededRng, randomInt, shuffleWithRng } from '../utils/seededRandom';
 
@@ -9,6 +9,7 @@ const POT_SIZE = 8;
 
 interface CreateTournamentOptions {
   seed: string;
+  difficultyId?: DifficultyId;
   userTeamName?: string;
   userTeamStrength?: number;
   rng?: RandomSource;
@@ -44,8 +45,16 @@ const createTournamentField = (
   rng: RandomSource,
   userTeamName: string,
   userTeamStrength: number,
+  difficultyId: DifficultyId,
 ) => {
-  const replacedSquad = historicalSquads[randomInt(rng, historicalSquads.length)];
+  const orderedSquads = [...historicalSquads].sort((left, right) => right.baseStrength - left.baseStrength);
+  const replacementPool =
+    difficultyId === 'casual'
+      ? orderedSquads.slice(0, 12)
+      : difficultyId === 'expert'
+        ? orderedSquads.slice(-12)
+        : orderedSquads;
+  const replacedSquad = replacementPool[randomInt(rng, replacementPool.length)];
   const teams = historicalSquads
     .filter((squad) => squad.id !== replacedSquad.id)
     .map(toHistoricalTeam)
@@ -176,11 +185,12 @@ export const createGroupMatches = (groups: TournamentGroup[]): TournamentMatch[]
 
 export const createTournament = ({
   seed,
+  difficultyId = 'classic',
   userTeamName = 'Dream XI',
   userTeamStrength = 84,
   rng = createSeededRng(seed),
 }: CreateTournamentOptions): TournamentState => {
-  const { teams, replacedSquad } = createTournamentField(squads, rng, userTeamName, userTeamStrength);
+  const { teams, replacedSquad } = createTournamentField(squads, rng, userTeamName, userTeamStrength, difficultyId);
   const seededTeams = assignPots(teams);
   const groups = drawTournamentGroups(seededTeams, rng);
 

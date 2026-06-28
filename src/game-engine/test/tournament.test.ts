@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { squads } from '../../data/mockData';
 import type { Confederation, TournamentGroup } from '../../types/game';
 import { canPlaceTeamInGroup, createTournament } from '../tournament';
 
@@ -62,5 +63,16 @@ describe('tournament draw', () => {
     expect(canPlaceTeamInGroup([firstUefa], secondUefa)).toBe(true);
     expect(canPlaceTeamInGroup([firstUefa, secondUefa], thirdUefa)).toBe(false);
     expect(canPlaceTeamInGroup([firstConmebol], secondConmebol)).toBe(false);
+  });
+
+  it('uses difficulty to choose which historical squad the Dream XI replaces', () => {
+    const orderedSquads = [...squads].sort((left, right) => right.baseStrength - left.baseStrength);
+    const casualReplacementIds = new Set(orderedSquads.slice(0, 12).map((squad) => squad.id));
+    const expertReplacementIds = new Set(orderedSquads.slice(-12).map((squad) => squad.id));
+    const casual = createTournament({ seed: 'difficulty-check', difficultyId: 'casual' });
+    const expert = createTournament({ seed: 'difficulty-check', difficultyId: 'expert' });
+
+    expect(casualReplacementIds.has(casual.replacedSquadId)).toBe(true);
+    expect(expertReplacementIds.has(expert.replacedSquadId)).toBe(true);
   });
 });
