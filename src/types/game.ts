@@ -218,13 +218,15 @@ export interface GroupStanding {
 
 export type TournamentRoundId = 'group-1' | 'group-2' | 'group-3' | 'round-of-16' | 'quarter-final' | 'semi-final' | 'final';
 
+export type TournamentStageReached = 'group' | 'round-of-16' | 'quarter-final' | 'semi-final' | 'final' | 'champion';
+
 export interface TournamentMatch {
   id: string;
   roundId: TournamentRoundId;
   groupId?: string;
   homeTeamId: string;
   awayTeamId: string;
-  result?: MatchResult;
+  result?: TacticalMatchResult;
 }
 
 export interface TournamentState {
@@ -288,6 +290,10 @@ export interface TacticalMatchEvent {
   chanceType: ChanceType;
   xg: number;
   goal: boolean;
+  shooterId: string;
+  shooterName: string;
+  creatorId?: string;
+  creatorName?: string;
   scorerId?: string;
   scorerName?: string;
   assistId?: string;
@@ -318,4 +324,28 @@ export interface TacticalMatchResult {
   awayXg: number;
   events: TacticalMatchEvent[];
   reasons: string[];
+}
+
+export interface TournamentTeamStats {
+  teamId: string;
+  played: number;
+  wins: number;
+  draws: number;
+  losses: number;
+  goalsFor: number;
+  goalsAgainst: number;
+  goalDifference: number;
+  xgFor: number;
+  xgAgainst: number;
+  playerXg: Record<string, number>;
+  playerXa: Record<string, number>;
+  stageReached: TournamentStageReached;
+}
+
+export interface TournamentSimulationResult {
+  tournament: TournamentState;
+  groupStandings: Record<string, GroupStanding[]>;
+  teamStats: Record<string, TournamentTeamStats>;
+  championTeamId: string;
+  runnerUpTeamId: string;
 }
