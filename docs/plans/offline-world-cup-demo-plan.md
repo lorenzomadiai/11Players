@@ -11,7 +11,12 @@ Before and after every implementation batch:
 3. Add note-derived requirements to the next batch plan.
 4. Leave `my_notes.md` untouched unless explicitly asked to edit it.
 
-Current note-derived requirements: none. The file is empty as of this batch.
+Current note-derived requirements:
+
+- Preselect future opponents in the background during the user draft flow, triggered by Continue Draft actions.
+- Let difficulty affect opponent strength selection while still obeying practical World Cup group draw rules.
+- Build a separate large simulation/statistics environment after the core engine work; this belongs on its own parent branch from `barbaros-updates`, not inside this demo implementation parent branch.
+- Plan UI only after the engine and logic are understandable enough to make the interface clear.
 
 ## Batch 1: Data Foundation
 
@@ -43,6 +48,8 @@ Status: implemented on `feature/opponent-xi-builder`.
 
 ## Batch 4: Tactical Match Engine
 
+Status: implemented on `feature/tactical-match-engine`.
+
 - Replace abstract opponent simulation with XI-vs-XI events.
 - Generate chance types, scorers, assists, xG, goal reasons, and key matchup explanations.
 - Support knockout extra time and penalties.
@@ -58,3 +65,15 @@ Status: implemented on `feature/opponent-xi-builder`.
 - Verify mobile and desktop layouts.
 - Add restart/continue tournament handling.
 - Run `npm run check` before merge.
+
+## Separate Parent Branch: Simulation Lab
+
+Status: planned as its own parent branch from `barbaros-updates`, not as a child branch under `feature/tournament-demo-foundation`.
+
+Planned branch name: `tooling/simulation-lab`.
+
+- Run 200-300 tournament simulations against the current dataset and engine.
+- Output detailed JSON reports for every tournament, team, match, goal, scorer, xG total, expected favorite, actual winner, upset classification, and stage reached.
+- Aggregate team-level statistics: titles, finals, semifinals, group exits, average goals for, average goals against, average xG, upset wins, upset losses, and expected-vs-actual performance.
+- Aggregate match-level statistics: average goals, average xG, clean sheets, penalty decisions, extra-time matches, favorite win rate, draw rate before knockout resolution, and biggest margins.
+- Keep this heavy testing environment out of the normal app code path unless explicitly merged later.
