@@ -237,3 +237,10 @@ export interface TournamentState {
   userTeamId: string;
   replacedSquadId: string;
 }
+
+export interface OpponentXI {
+  squad: Squad;
+  formation: Formation;
+  lineup: LineupSelection;
+  evaluation: TeamEvaluation;
+}
