@@ -35,6 +35,8 @@ Status: implemented on `feature/tournament-demo-foundation`.
 
 ## Batch 3: Opponent XI Builder
 
+Status: implemented on `feature/opponent-xi-builder`.
+
 - Auto-select opponent formation and legal XI.
 - Evaluate opponent XI with the same core evaluation rules as the user's XI.
 - Keep output deterministic from tournament seed and opponent squad.
