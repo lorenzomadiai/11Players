@@ -244,3 +244,78 @@ export interface OpponentXI {
   lineup: LineupSelection;
   evaluation: TeamEvaluation;
 }
+
+export type TacticalTeamSide = 'home' | 'away';
+
+export type ChanceType = 'central' | 'wide' | 'counter' | 'set-piece' | 'long-shot' | 'aerial' | 'penalty';
+
+export interface TacticalTeamInput {
+  id: string;
+  name: string;
+  formation: Formation;
+  lineup: LineupSelection;
+  evaluation: TeamEvaluation;
+  style?: TeamStyle;
+}
+
+export interface TacticalTeamProfile {
+  id: string;
+  name: string;
+  formationId: string;
+  attack: number;
+  midfield: number;
+  defense: number;
+  keeper: number;
+  chemistry: number;
+  tacticalFit: number;
+  finishing: number;
+  chanceCreation: number;
+  setPieces: number;
+  aerial: number;
+  workRate: number;
+  wideThreat: number;
+  centralThreat: number;
+  counterThreat: number;
+  pressure: number;
+  tempo: number;
+}
+
+export interface TacticalMatchEvent {
+  minute: number;
+  side: TacticalTeamSide;
+  teamId: string;
+  teamName: string;
+  chanceType: ChanceType;
+  xg: number;
+  goal: boolean;
+  scorerId?: string;
+  scorerName?: string;
+  assistId?: string;
+  assistName?: string;
+  reason: string;
+  metrics: {
+    creatorScore: number;
+    finisherScore: number;
+    defensivePressure: number;
+    keeperResistance: number;
+    roll: number;
+  };
+}
+
+export interface TacticalMatchResult {
+  homeTeam: TacticalTeamProfile;
+  awayTeam: TacticalTeamProfile;
+  homeGoals: number;
+  awayGoals: number;
+  outcome: 'home-win' | 'draw' | 'away-win';
+  winnerSide?: TacticalTeamSide;
+  resolution: 'regular' | 'draw' | 'extra-time' | 'penalties';
+  penalties?: {
+    home: number;
+    away: number;
+  };
+  homeXg: number;
+  awayXg: number;
+  events: TacticalMatchEvent[];
+  reasons: string[];
+}
