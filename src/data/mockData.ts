@@ -1,11 +1,15 @@
-import type { Player, Squad } from '../types/game';
+import type { BasePlayerStats, Player, Squad } from '../types/game';
 import { expandedSquads } from './expandedSquads';
+import { completePlayerStats } from './playerStats';
 
-type PlayerSeed = Omit<Player, 'countryCode' | 'worldCupYear' | 'eraGroup'>;
+type PlayerSeed = Omit<Player, 'countryCode' | 'worldCupYear' | 'eraGroup' | 'stats'> & {
+  stats: BasePlayerStats;
+};
 
 const makePlayers = (countryCode: string, worldCupYear: number, eraGroup: string, players: PlayerSeed[]) =>
   players.map((player) => ({
     ...player,
+    stats: completePlayerStats(player.stats, player),
     countryCode,
     worldCupYear,
     eraGroup,
@@ -16,6 +20,7 @@ const baseSquads: Squad[] = [
     id: 'bra-2002',
     countryCode: 'BRA',
     country: 'Brazil',
+    confederation: 'CONMEBOL',
     flag: 'BRA',
     year: 2002,
     editionName: 'Korea/Japan 2002',
@@ -203,6 +208,7 @@ const baseSquads: Squad[] = [
     id: 'fra-1998',
     countryCode: 'FRA',
     country: 'France',
+    confederation: 'UEFA',
     flag: 'FRA',
     year: 1998,
     editionName: 'France 1998',
@@ -389,6 +395,7 @@ const baseSquads: Squad[] = [
     id: 'esp-2010',
     countryCode: 'ESP',
     country: 'Spain',
+    confederation: 'UEFA',
     flag: 'ESP',
     year: 2010,
     editionName: 'South Africa 2010',
@@ -587,6 +594,7 @@ const baseSquads: Squad[] = [
     id: 'arg-2022',
     countryCode: 'ARG',
     country: 'Argentina',
+    confederation: 'CONMEBOL',
     flag: 'ARG',
     year: 2022,
     editionName: 'Qatar 2022',

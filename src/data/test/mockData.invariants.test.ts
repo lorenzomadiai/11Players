@@ -1,8 +1,23 @@
 import { describe, expect, it } from 'vitest';
 import { getSquadById, squads } from '../mockData';
-import type { Position } from '../../types/game';
+import type { Confederation, Position } from '../../types/game';
 
 const validPositions: Position[] = ['GK', 'LB', 'CB', 'RB', 'LWB', 'RWB', 'DM', 'CM', 'AM', 'LM', 'RM', 'LW', 'RW', 'ST'];
+const validConfederations: Confederation[] = ['AFC', 'CAF', 'CONCACAF', 'CONMEBOL', 'OFC', 'UEFA'];
+const requiredStats = [
+  'pace',
+  'shooting',
+  'passing',
+  'defense',
+  'physical',
+  'technique',
+  'finishing',
+  'chanceCreation',
+  'setPieces',
+  'aerial',
+  'goalkeeping',
+  'workRate',
+] as const;
 
 describe('squad data invariants', () => {
   it('keeps squad and player ids unique and resolvable', () => {
@@ -28,6 +43,7 @@ describe('squad data invariants', () => {
   it('keeps every squad large enough and every player inside valid rating/stat/position bounds', () => {
     squads.forEach((squad) => {
       expect(squad.players.length).toBeGreaterThanOrEqual(11);
+      expect(validConfederations).toContain(squad.confederation);
       expect(squad.baseStrength).toBeGreaterThanOrEqual(0);
       expect(squad.baseStrength).toBeLessThanOrEqual(100);
 
@@ -38,6 +54,7 @@ describe('squad data invariants', () => {
         expect(player.rating).toBeLessThanOrEqual(100);
         expect(player.positions.length).toBeGreaterThan(0);
         player.positions.forEach((position) => expect(validPositions).toContain(position));
+        expect(Object.keys(player.stats).sort()).toEqual([...requiredStats].sort());
         Object.values(player.stats).forEach((stat) => {
           expect(stat).toBeGreaterThanOrEqual(0);
           expect(stat).toBeLessThanOrEqual(100);

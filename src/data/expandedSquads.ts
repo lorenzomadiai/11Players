@@ -1,4 +1,5 @@
-import type { Player, PlayerStats, Position, Squad } from '../types/game';
+import type { BasePlayerStats, Confederation, Player, Position, Squad } from '../types/game';
+import { completePlayerStats } from './playerStats';
 
 type DemoPlayerSeed = Omit<Player, 'id' | 'countryCode' | 'worldCupYear' | 'eraGroup' | 'stats' | 'traits'> & {
   traits?: string[];
@@ -19,7 +20,7 @@ const roleGroupFor = (position: Position) => {
   return 'attack';
 };
 
-const statsFor = (position: Position, rating: number): PlayerStats => {
+const statsFor = (position: Position, rating: number): BasePlayerStats => {
   const group = roleGroupFor(position);
 
   if (group === 'goalkeeper') {
@@ -99,6 +100,7 @@ const squad = (
   id: `${config.countryCode.toLowerCase()}-${config.year}`,
   countryCode: config.countryCode,
   country: config.country,
+  confederation: config.confederation,
   flag: config.countryCode,
   year: config.year,
   editionName: config.editionName,
@@ -106,22 +108,64 @@ const squad = (
   manager: config.manager,
   style: config.style,
   baseStrength: config.baseStrength,
-  players: config.players.map((player) => ({
-    ...player,
-    id: `${config.countryCode.toLowerCase()}-${config.year}-${slug(player.name)}`,
-    countryCode: config.countryCode,
-    worldCupYear: config.year,
-    eraGroup: config.eraGroup,
-    stats: statsFor(player.positions[0], player.rating),
-    traits: player.traits ?? defaultTraits(player.positions[0]),
-  })),
+  players: config.players.map((player) => {
+    const traits = player.traits ?? defaultTraits(player.positions[0]);
+
+    return {
+      ...player,
+      id: `${config.countryCode.toLowerCase()}-${config.year}-${slug(player.name)}`,
+      countryCode: config.countryCode,
+      worldCupYear: config.year,
+      eraGroup: config.eraGroup,
+      stats: completePlayerStats(statsFor(player.positions[0], player.rating), {
+        rating: player.rating,
+        positions: player.positions,
+        traits,
+      }),
+      traits,
+    };
+  }),
 });
+
+const confederations: Record<string, Confederation> = {
+  BEL: 'UEFA',
+  BUL: 'UEFA',
+  CHI: 'CONMEBOL',
+  CMR: 'CAF',
+  COL: 'CONMEBOL',
+  CRC: 'CONCACAF',
+  CRO: 'UEFA',
+  DEN: 'UEFA',
+  ENG: 'UEFA',
+  GER: 'UEFA',
+  GHA: 'CAF',
+  ITA: 'UEFA',
+  JPN: 'AFC',
+  KOR: 'AFC',
+  MAR: 'CAF',
+  MEX: 'CONCACAF',
+  NED: 'UEFA',
+  NGA: 'CAF',
+  PAR: 'CONMEBOL',
+  POL: 'UEFA',
+  POR: 'UEFA',
+  ROU: 'UEFA',
+  SEN: 'CAF',
+  SUI: 'UEFA',
+  SWE: 'UEFA',
+  TUR: 'UEFA',
+  URU: 'CONMEBOL',
+  USA: 'CONCACAF',
+};
+
+const confederationFor = (countryCode: string) => confederations[countryCode] ?? 'UEFA';
 
 // Gameplay ratings are authored for this app. Player pools are based on public World Cup squad lists.
 export const expandedSquads: Squad[] = [
   squad({
     countryCode: 'GER',
     country: 'Germany',
+    confederation: confederationFor('GER'),
     year: 2014,
     editionName: 'Brazil 2014',
     finish: 'Champions',
@@ -150,6 +194,7 @@ export const expandedSquads: Squad[] = [
   squad({
     countryCode: 'ITA',
     country: 'Italy',
+    confederation: confederationFor('ITA'),
     year: 2006,
     editionName: 'Germany 2006',
     finish: 'Champions',
@@ -178,6 +223,7 @@ export const expandedSquads: Squad[] = [
   squad({
     countryCode: 'NED',
     country: 'Netherlands',
+    confederation: confederationFor('NED'),
     year: 2010,
     editionName: 'South Africa 2010',
     finish: 'Runners-up',
@@ -206,6 +252,7 @@ export const expandedSquads: Squad[] = [
   squad({
     countryCode: 'ENG',
     country: 'England',
+    confederation: confederationFor('ENG'),
     year: 2018,
     editionName: 'Russia 2018',
     finish: 'Semi-finals',
@@ -234,6 +281,7 @@ export const expandedSquads: Squad[] = [
   squad({
     countryCode: 'POR',
     country: 'Portugal',
+    confederation: confederationFor('POR'),
     year: 2006,
     editionName: 'Germany 2006',
     finish: 'Semi-finals',
@@ -262,6 +310,7 @@ export const expandedSquads: Squad[] = [
   squad({
     countryCode: 'BEL',
     country: 'Belgium',
+    confederation: confederationFor('BEL'),
     year: 2018,
     editionName: 'Russia 2018',
     finish: 'Third place',
@@ -290,6 +339,7 @@ export const expandedSquads: Squad[] = [
   squad({
     countryCode: 'CRO',
     country: 'Croatia',
+    confederation: confederationFor('CRO'),
     year: 2018,
     editionName: 'Russia 2018',
     finish: 'Runners-up',
@@ -318,6 +368,7 @@ export const expandedSquads: Squad[] = [
   squad({
     countryCode: 'URU',
     country: 'Uruguay',
+    confederation: confederationFor('URU'),
     year: 2010,
     editionName: 'South Africa 2010',
     finish: 'Semi-finals',
@@ -346,6 +397,7 @@ export const expandedSquads: Squad[] = [
   squad({
     countryCode: 'COL',
     country: 'Colombia',
+    confederation: confederationFor('COL'),
     year: 2014,
     editionName: 'Brazil 2014',
     finish: 'Quarter-finals',
@@ -374,6 +426,7 @@ export const expandedSquads: Squad[] = [
   squad({
     countryCode: 'MEX',
     country: 'Mexico',
+    confederation: confederationFor('MEX'),
     year: 2014,
     editionName: 'Brazil 2014',
     finish: 'Round of 16',
@@ -402,6 +455,7 @@ export const expandedSquads: Squad[] = [
   squad({
     countryCode: 'USA',
     country: 'United States',
+    confederation: confederationFor('USA'),
     year: 2002,
     editionName: 'Korea/Japan 2002',
     finish: 'Quarter-finals',
@@ -430,6 +484,7 @@ export const expandedSquads: Squad[] = [
   squad({
     countryCode: 'JPN',
     country: 'Japan',
+    confederation: confederationFor('JPN'),
     year: 2018,
     editionName: 'Russia 2018',
     finish: 'Round of 16',
@@ -458,6 +513,7 @@ export const expandedSquads: Squad[] = [
   squad({
     countryCode: 'KOR',
     country: 'South Korea',
+    confederation: confederationFor('KOR'),
     year: 2002,
     editionName: 'Korea/Japan 2002',
     finish: 'Fourth place',
@@ -486,6 +542,7 @@ export const expandedSquads: Squad[] = [
   squad({
     countryCode: 'TUR',
     country: 'Turkey',
+    confederation: confederationFor('TUR'),
     year: 2002,
     editionName: 'Korea/Japan 2002',
     finish: 'Third place',
@@ -514,6 +571,7 @@ export const expandedSquads: Squad[] = [
   squad({
     countryCode: 'SEN',
     country: 'Senegal',
+    confederation: confederationFor('SEN'),
     year: 2002,
     editionName: 'Korea/Japan 2002',
     finish: 'Quarter-finals',
@@ -542,6 +600,7 @@ export const expandedSquads: Squad[] = [
   squad({
     countryCode: 'MAR',
     country: 'Morocco',
+    confederation: confederationFor('MAR'),
     year: 2022,
     editionName: 'Qatar 2022',
     finish: 'Semi-finals',
@@ -570,6 +629,7 @@ export const expandedSquads: Squad[] = [
   squad({
     countryCode: 'GHA',
     country: 'Ghana',
+    confederation: confederationFor('GHA'),
     year: 2010,
     editionName: 'South Africa 2010',
     finish: 'Quarter-finals',
@@ -598,6 +658,7 @@ export const expandedSquads: Squad[] = [
   squad({
     countryCode: 'NGA',
     country: 'Nigeria',
+    confederation: confederationFor('NGA'),
     year: 1994,
     editionName: 'United States 1994',
     finish: 'Round of 16',
@@ -626,6 +687,7 @@ export const expandedSquads: Squad[] = [
   squad({
     countryCode: 'CMR',
     country: 'Cameroon',
+    confederation: confederationFor('CMR'),
     year: 1990,
     editionName: 'Italy 1990',
     finish: 'Quarter-finals',
@@ -654,6 +716,7 @@ export const expandedSquads: Squad[] = [
   squad({
     countryCode: 'CRC',
     country: 'Costa Rica',
+    confederation: confederationFor('CRC'),
     year: 2014,
     editionName: 'Brazil 2014',
     finish: 'Quarter-finals',
@@ -682,6 +745,7 @@ export const expandedSquads: Squad[] = [
   squad({
     countryCode: 'SUI',
     country: 'Switzerland',
+    confederation: confederationFor('SUI'),
     year: 2018,
     editionName: 'Russia 2018',
     finish: 'Round of 16',
@@ -710,6 +774,7 @@ export const expandedSquads: Squad[] = [
   squad({
     countryCode: 'SWE',
     country: 'Sweden',
+    confederation: confederationFor('SWE'),
     year: 1994,
     editionName: 'United States 1994',
     finish: 'Third place',
@@ -738,6 +803,7 @@ export const expandedSquads: Squad[] = [
   squad({
     countryCode: 'DEN',
     country: 'Denmark',
+    confederation: confederationFor('DEN'),
     year: 1998,
     editionName: 'France 1998',
     finish: 'Quarter-finals',
@@ -766,6 +832,7 @@ export const expandedSquads: Squad[] = [
   squad({
     countryCode: 'POL',
     country: 'Poland',
+    confederation: confederationFor('POL'),
     year: 1982,
     editionName: 'Spain 1982',
     finish: 'Third place',
@@ -794,6 +861,7 @@ export const expandedSquads: Squad[] = [
   squad({
     countryCode: 'CHI',
     country: 'Chile',
+    confederation: confederationFor('CHI'),
     year: 2014,
     editionName: 'Brazil 2014',
     finish: 'Round of 16',
@@ -822,6 +890,7 @@ export const expandedSquads: Squad[] = [
   squad({
     countryCode: 'PAR',
     country: 'Paraguay',
+    confederation: confederationFor('PAR'),
     year: 2010,
     editionName: 'South Africa 2010',
     finish: 'Quarter-finals',
@@ -850,6 +919,7 @@ export const expandedSquads: Squad[] = [
   squad({
     countryCode: 'BUL',
     country: 'Bulgaria',
+    confederation: confederationFor('BUL'),
     year: 1994,
     editionName: 'United States 1994',
     finish: 'Fourth place',
@@ -878,6 +948,7 @@ export const expandedSquads: Squad[] = [
   squad({
     countryCode: 'ROU',
     country: 'Romania',
+    confederation: confederationFor('ROU'),
     year: 1994,
     editionName: 'United States 1994',
     finish: 'Quarter-finals',
