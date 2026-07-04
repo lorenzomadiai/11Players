@@ -57,4 +57,11 @@ describe('SquadList', () => {
     expect(screen.getByRole('button', { name: /Cafu/i })).toHaveClass('squad-row--pending');
     expect(screen.getByRole('button', { name: /Cafu/i })).not.toBeDisabled();
   });
+
+  it('seals player names while the draw reveal is still running', () => {
+    renderSquadList({ isRevealed: false });
+
+    expect(screen.getByText(/Awaiting final draw/i)).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Cafu/i })).not.toBeInTheDocument();
+  });
 });
