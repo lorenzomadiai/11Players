@@ -1,6 +1,7 @@
-import { useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { ArrowDown } from 'lucide-react';
 import DraftBanner from '../components/DraftBanner';
+import type { DraftRevealState } from '../components/DraftBanner';
 import Pitch from '../components/Pitch';
 import ResultPanel from '../components/ResultPanel';
 import SelectedXI from '../components/SelectedXI';
@@ -61,8 +62,10 @@ export default function GamePage({
 }: GamePageProps) {
   const [pendingPlayer, setPendingPlayer] = useState<Player | null>(null);
   const [glowing, setGlowing] = useState(false);
+  const [revealedSquadId, setRevealedSquadId] = useState<string | null>(null);
   const pitchRef = useRef<HTMLElement>(null);
   const squadRef = useRef<HTMLElement>(null);
+  const isDrawRevealed = revealedSquadId === squad.id;
 
   const difficulty = getDifficultyById(difficultyId);
   const evaluation = useMemo(
@@ -70,7 +73,18 @@ export default function GamePage({
     [formation, lineup, difficulty, draw.challengeId],
   );
 
+  const handleRevealStateChange = useCallback(
+    (state: DraftRevealState) => {
+      setRevealedSquadId(state === 'revealed' ? squad.id : null);
+    },
+    [squad.id],
+  );
+
   const pickPlayer = (player: Player) => {
+    if (!isDrawRevealed) {
+      return;
+    }
+
     if (pendingPlayer?.id === player.id) {
       setPendingPlayer(null);
       return;
@@ -116,6 +130,7 @@ export default function GamePage({
         squad={squad}
         rerollsLeft={rerollsLeft}
         canReroll={pendingSlotId === null}
+        onRevealStateChange={handleRevealStateChange}
         onChangeTeam={onChangeTeam}
         onChangeYear={onChangeYear}
       />
@@ -130,8 +145,14 @@ export default function GamePage({
             <button
               className={`continue-draft${glowing ? ' is-glowing' : ''}`}
               type="button"
-              disabled={pendingSlotId === null}
-              title={pendingSlotId === null ? 'Place a player on the pitch first' : 'Lock this pick and draw the next team'}
+              disabled={pendingSlotId === null || !isDrawRevealed}
+              title={
+                !isDrawRevealed
+                  ? 'Wait for the draw reveal'
+                  : pendingSlotId === null
+                    ? 'Place a player on the pitch first'
+                    : 'Lock this pick and draw the next team'
+              }
               onClick={continueDraft}
               onAnimationEnd={() => setGlowing(false)}
             >
@@ -147,6 +168,7 @@ export default function GamePage({
             lineup={lineup}
             provisionalSlotId={pendingSlotId}
             pendingPlayerId={pendingPlayer?.id ?? null}
+            isRevealed={isDrawRevealed}
             onPickPlayer={pickPlayer}
           />
 

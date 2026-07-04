@@ -9,6 +9,7 @@ interface SquadListProps {
   lineup: LineupSelection;
   provisionalSlotId: string | null;
   pendingPlayerId: string | null;
+  isRevealed?: boolean;
   onPickPlayer: (player: Player) => void;
 }
 
@@ -25,7 +26,7 @@ const sortSquad = (players: Player[]) =>
   });
 
 const SquadList = forwardRef<HTMLElement, SquadListProps>(function SquadList(
-  { squad, formation, lineup, provisionalSlotId, pendingPlayerId, onPickPlayer },
+  { squad, formation, lineup, provisionalSlotId, pendingPlayerId, isRevealed = true, onPickPlayer },
   ref,
 ) {
   const usedPlayerIds = useMemo(
@@ -44,6 +45,29 @@ const SquadList = forwardRef<HTMLElement, SquadListProps>(function SquadList(
   useEffect(() => {
     scrollRef.current?.scrollTo?.({ top: 0 });
   }, [squad.id]);
+
+  if (!isRevealed) {
+    return (
+      <section className="squad-list squad-list--revealing" aria-label="Squad reveal pending" aria-busy="true" ref={ref}>
+        <div className="squad-list__head">
+          <h2>Squad</h2>
+          <span>Awaiting final draw</span>
+        </div>
+
+        <div className="squad-list__reveal" aria-live="polite">
+          <strong>Scouting files sealed</strong>
+          <span>Lineup cards opening next</span>
+          {/* These rows preserve the squad panel rhythm without exposing names,
+              so the banner reveal remains the first real team signal. */}
+          <div className="squad-list__skeleton" aria-hidden="true">
+            {Array.from({ length: 8 }, (_, index) => (
+              <span key={index} />
+            ))}
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="squad-list" aria-label={`${squad.country} ${squad.year} squad`} ref={ref}>

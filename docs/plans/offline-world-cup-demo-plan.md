@@ -74,6 +74,16 @@ Status: implemented on `feature/tournament-ui-integration`, pending merge into `
 
 ## Batch 7: Demo Polish
 
+### Batch 7A: Draft Reveal Sequence
+
+Status: implemented locally on `feature/draft-reveal-sequence`, pending review.
+
+- Keep the player list sealed while the team/year draw reel is running.
+- Reveal the squad list only after the draw banner confirms the final team.
+- Prevent draft clicks during the reveal window so the rolling team display remains meaningful.
+
+### Remaining Demo Polish
+
 - Balance match numbers.
 - Verify mobile and desktop layouts.
 - Add restart/continue tournament handling.

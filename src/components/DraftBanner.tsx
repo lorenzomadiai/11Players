@@ -8,23 +8,39 @@ interface DraftBannerProps {
   rerollsLeft: number;
   /** Skipping is disabled while a provisional pick from this draw sits on the pitch. */
   canReroll: boolean;
+  onRevealStateChange?: (state: DraftRevealState) => void;
   onChangeTeam: () => void;
   onChangeYear: () => void;
 }
 
 const SPIN_TICKS = 14;
 const SPIN_INTERVAL_MS = 75;
+const REEL_PLACEHOLDER = 'Drawing...';
+
+export type DraftRevealState = 'rolling' | 'revealed';
 
 const labelOf = (squad: Squad) => `${squad.country} ${squad.year}`;
 
-export default function DraftBanner({ squad, rerollsLeft, canReroll, onChangeTeam, onChangeYear }: DraftBannerProps) {
-  const [display, setDisplay] = useState(labelOf(squad));
+export default function DraftBanner({
+  squad,
+  rerollsLeft,
+  canReroll,
+  onRevealStateChange,
+  onChangeTeam,
+  onChangeYear,
+}: DraftBannerProps) {
+  const [display, setDisplay] = useState(REEL_PLACEHOLDER);
   const [spinning, setSpinning] = useState(false);
 
   useEffect(() => {
     const finalLabel = labelOf(squad);
     const reel = squads.map(labelOf);
     let tick = 0;
+
+    // The banner owns the reveal clock; parent screens use this signal to keep
+    // player names sealed until the draw animation has genuinely finished.
+    onRevealStateChange?.('rolling');
+    setDisplay(REEL_PLACEHOLDER);
     setSpinning(true);
 
     const interval = window.setInterval(() => {
@@ -33,6 +49,7 @@ export default function DraftBanner({ squad, rerollsLeft, canReroll, onChangeTea
         window.clearInterval(interval);
         setDisplay(finalLabel);
         setSpinning(false);
+        onRevealStateChange?.('revealed');
         return;
       }
       setDisplay(reel[tick % reel.length]);
@@ -40,11 +57,8 @@ export default function DraftBanner({ squad, rerollsLeft, canReroll, onChangeTea
 
     return () => {
       window.clearInterval(interval);
-      setSpinning(false);
-      setDisplay(finalLabel);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [squad.id]);
+  }, [onRevealStateChange, squad.id]);
 
   return (
     <section className="draft-banner" aria-label="Drawn team">

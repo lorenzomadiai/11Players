@@ -729,7 +729,8 @@ p {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .continue-draft.is-glowing {
+  .continue-draft.is-glowing,
+  .squad-list__skeleton span {
     animation: none;
   }
 }
@@ -741,6 +742,10 @@ p {
   border: 1px solid var(--line);
   border-radius: 8px;
   background: var(--surface);
+}
+
+.squad-list--revealing {
+  overflow: hidden;
 }
 
 .squad-list__head {
@@ -767,6 +772,62 @@ p {
   max-height: min(44vh, 430px);
   padding-right: 4px;
   overflow-y: auto;
+}
+
+.squad-list__reveal {
+  display: grid;
+  place-items: center;
+  gap: 6px;
+  min-height: min(38vh, 360px);
+  padding: 20px;
+  border: 1px dashed var(--line);
+  border-radius: 8px;
+  background: linear-gradient(135deg, var(--surface-soft), var(--surface));
+  text-align: center;
+}
+
+.squad-list__reveal strong {
+  color: var(--text);
+  font-size: 1rem;
+}
+
+.squad-list__reveal > span {
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.squad-list__skeleton {
+  display: grid;
+  gap: 5px;
+  width: min(100%, 420px);
+  margin-top: 8px;
+}
+
+.squad-list__skeleton span {
+  display: block;
+  height: 36px;
+  border-radius: 6px;
+  background: linear-gradient(90deg, var(--surface-soft), var(--surface-strong), var(--surface-soft));
+  background-size: 240% 100%;
+  animation: reveal-sweep 950ms ease-in-out infinite;
+}
+
+.squad-list__skeleton span:nth-child(2n) {
+  width: 88%;
+}
+
+.squad-list__skeleton span:nth-child(3n) {
+  width: 94%;
+}
+
+@keyframes reveal-sweep {
+  from {
+    background-position: 100% 0;
+  }
+  to {
+    background-position: -100% 0;
+  }
 }
 
 .squad-row {

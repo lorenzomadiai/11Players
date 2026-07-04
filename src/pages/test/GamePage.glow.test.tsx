@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import GamePage from '../GamePage';
 import { freePlayChallenge } from '../../game-engine/challenges';
@@ -10,6 +10,12 @@ describe('GamePage — Continue Draft attention glow', () => {
   const squad = requireSquad('bra-2002');
   const formation = requireFormation('433');
   const draw: GameDraw = { squadId: squad.id, formationId: formation.id, challengeId: freePlayChallenge.id };
+
+  const finishDrawReveal = () => {
+    act(() => {
+      vi.advanceTimersByTime(1200);
+    });
+  };
 
   const renderPage = () =>
     render(
@@ -35,6 +41,7 @@ describe('GamePage — Continue Draft attention glow', () => {
     );
 
   beforeEach(() => {
+    vi.useFakeTimers();
     // jsdom implements none of these; GamePage/SquadList call them during pick/place.
     Element.prototype.scrollIntoView = vi.fn();
     Element.prototype.scrollTo = vi.fn() as unknown as typeof Element.prototype.scrollTo;
@@ -48,12 +55,14 @@ describe('GamePage — Continue Draft attention glow', () => {
   });
 
   afterEach(() => {
+    vi.useRealTimers();
     vi.unstubAllGlobals();
     vi.restoreAllMocks();
   });
 
   it('glows the Continue Draft button only after a player is placed on the pitch', () => {
     renderPage();
+    finishDrawReveal();
 
     const continueButton = screen.getByRole('button', { name: /Continue Draft/i });
     expect(continueButton).not.toHaveClass('is-glowing');
