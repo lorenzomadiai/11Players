@@ -1561,16 +1561,44 @@ p {
 
 .live-tournament__hero {
   display: grid;
-  gap: 6px;
+  grid-template-columns: minmax(0, 1fr) minmax(240px, auto);
+  align-items: start;
+  gap: 12px;
   padding: 16px;
   border: 1px solid var(--line);
   border-radius: 8px;
   background: var(--surface);
 }
 
+.live-tournament__hero-copy {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+
 .live-tournament__hero h2,
 .live-tournament__hero p {
   margin: 0;
+}
+
+.live-speed-control {
+  display: grid;
+  gap: 6px;
+  justify-self: end;
+  width: min(100%, 320px);
+}
+
+.live-speed-control > span {
+  color: var(--muted);
+  font-size: 0.68rem;
+  font-weight: 900;
+  text-align: right;
+  text-transform: uppercase;
+}
+
+.live-speed-control .segmented-control button {
+  min-height: 34px;
+  padding: 0 8px;
 }
 
 .live-tournament__track {
@@ -1644,7 +1672,6 @@ p {
 }
 
 .live-match-card__start button,
-.live-next-event,
 .live-match-summary button {
   display: inline-flex;
   align-items: center;
@@ -1697,6 +1724,43 @@ p {
   font-size: 1rem;
 }
 
+.live-clock-panel {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(130px, auto);
+  align-items: center;
+  gap: 10px;
+  min-height: 42px;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface-soft);
+}
+
+.live-clock-panel span {
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.live-clock-panel strong {
+  display: grid;
+  place-items: center;
+  min-width: 54px;
+  min-height: 30px;
+  border-radius: 6px;
+  color: var(--ink);
+  background: var(--mint);
+  font-size: 0.95rem;
+}
+
+.live-clock-panel small {
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-align: right;
+}
+
 .live-event-feed {
   display: grid;
   gap: 7px;
@@ -1728,6 +1792,19 @@ p {
   color: var(--text);
 }
 
+.live-event em {
+  color: var(--text);
+  font-style: normal;
+  font-weight: 900;
+}
+
+.live-event small {
+  flex-basis: 100%;
+  color: var(--muted);
+  font-size: 0.74rem;
+  line-height: 1.35;
+}
+
 .live-event--goal {
   border: 1px solid color-mix(in srgb, var(--green) 48%, var(--line));
   background: color-mix(in srgb, var(--mint) 18%, var(--surface-soft));
@@ -1738,8 +1815,15 @@ p {
   font-weight: 800;
 }
 
-.live-next-event {
-  width: 100%;
+.live-playback-note {
+  margin: 0;
+  padding: 9px 10px;
+  border-radius: 8px;
+  color: var(--muted);
+  background: var(--surface-soft);
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-align: center;
 }
 
 .live-match-summary {
@@ -1801,6 +1885,19 @@ p {
   .live-match-card--complete {
     grid-template-columns: 1fr;
     align-items: start;
+  }
+
+  .live-tournament__hero {
+    grid-template-columns: 1fr;
+  }
+
+  .live-speed-control {
+    justify-self: stretch;
+    width: 100%;
+  }
+
+  .live-speed-control > span {
+    text-align: left;
   }
 }
 
@@ -1933,6 +2030,15 @@ p {
 
   .live-match-card {
     padding: 12px;
+  }
+
+  .live-clock-panel {
+    grid-template-columns: 1fr auto;
+  }
+
+  .live-clock-panel small {
+    grid-column: 1 / -1;
+    text-align: left;
   }
 }
 

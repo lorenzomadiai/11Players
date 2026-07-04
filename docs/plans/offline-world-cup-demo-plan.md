@@ -90,7 +90,8 @@ Status: implemented locally on `feature/live-tournament-match-flow`, pending rev
 
 - Do not reveal the final tournament result immediately after kickoff.
 - Show one user match at a time with a Start Match action.
-- Reveal important events one by one while updating the visible score only when goals are revealed.
+- Reveal important events from an automatic match clock, pausing briefly when each event appears.
+- Provide slow, fast, and simulate playback modes in the live match header.
 - Surface extra-time and penalty resolutions from the tactical engine when knockout matches require them.
 - Show the existing tournament summary only after the user's run is played through.
 
