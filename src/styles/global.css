@@ -1552,6 +1552,219 @@ p {
   gap: 8px;
 }
 
+/* ---------- live tournament flow ---------- */
+
+.live-tournament {
+  display: grid;
+  gap: 14px;
+}
+
+.live-tournament__hero {
+  display: grid;
+  gap: 6px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+}
+
+.live-tournament__hero h2,
+.live-tournament__hero p {
+  margin: 0;
+}
+
+.live-tournament__track {
+  display: grid;
+  gap: 10px;
+}
+
+.live-match-card {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+}
+
+.live-match-card--complete {
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  padding: 10px 12px;
+  background: var(--surface-soft);
+}
+
+.live-match-card--active {
+  border-color: color-mix(in srgb, var(--green) 42%, var(--line));
+}
+
+.live-match-card > span,
+.live-match-card header span {
+  color: var(--muted);
+  font-size: 0.7rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.live-match-card > strong,
+.live-match-card header strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.live-match-card small {
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.live-match-card header {
+  display: grid;
+  gap: 4px;
+}
+
+.live-match-card__start {
+  display: grid;
+  gap: 12px;
+  min-height: 160px;
+  place-items: center;
+  padding: 18px;
+  border: 1px dashed var(--line);
+  border-radius: 8px;
+  background: var(--surface-soft);
+  text-align: center;
+}
+
+.live-match-card__start p {
+  margin: 0;
+  color: var(--muted);
+  font-weight: 800;
+}
+
+.live-match-card__start button,
+.live-next-event,
+.live-match-summary button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 0 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--ink);
+  background: var(--mint);
+  font-size: 0.82rem;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.live-scoreboard {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.live-scoreboard div {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  min-height: 48px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: var(--surface-soft);
+}
+
+.live-scoreboard span {
+  overflow: hidden;
+  font-size: 0.86rem;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.live-scoreboard strong {
+  display: grid;
+  place-items: center;
+  min-width: 34px;
+  min-height: 34px;
+  border-radius: 6px;
+  color: var(--ink);
+  background: var(--sand);
+  font-size: 1rem;
+}
+
+.live-event-feed {
+  display: grid;
+  gap: 7px;
+  max-height: min(46vh, 430px);
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.live-event,
+.live-event-feed__empty {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  align-items: center;
+  margin: 0;
+  min-height: 34px;
+  padding: 7px 9px;
+  border-radius: 7px;
+  background: var(--surface-soft);
+  font-size: 0.82rem;
+}
+
+.live-event span {
+  color: var(--gold);
+  font-weight: 900;
+}
+
+.live-event strong {
+  color: var(--text);
+}
+
+.live-event--goal {
+  border: 1px solid color-mix(in srgb, var(--green) 48%, var(--line));
+  background: color-mix(in srgb, var(--mint) 18%, var(--surface-soft));
+}
+
+.live-event-feed__empty {
+  color: var(--muted);
+  font-weight: 800;
+}
+
+.live-next-event {
+  width: 100%;
+}
+
+.live-match-summary {
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface-soft);
+}
+
+.live-match-summary div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.live-match-summary p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.84rem;
+  font-weight: 800;
+}
+
 /* ---------- responsive ---------- */
 
 @media (max-width: 900px) {
@@ -1583,6 +1796,11 @@ p {
   .tournament-layout,
   .bracket-grid {
     grid-template-columns: 1fr;
+  }
+
+  .live-match-card--complete {
+    grid-template-columns: 1fr;
+    align-items: start;
   }
 }
 
@@ -1707,6 +1925,14 @@ p {
 
   .standings-table small {
     grid-column: 1 / -1;
+  }
+
+  .live-scoreboard {
+    grid-template-columns: 1fr;
+  }
+
+  .live-match-card {
+    padding: 12px;
   }
 }
 

@@ -2,11 +2,11 @@ import { useCallback, useMemo, useRef, useState } from 'react';
 import { ArrowDown } from 'lucide-react';
 import DraftBanner from '../components/DraftBanner';
 import type { DraftRevealState } from '../components/DraftBanner';
+import LiveTournamentFlow from '../components/LiveTournamentFlow';
 import Pitch from '../components/Pitch';
 import ResultPanel from '../components/ResultPanel';
 import SelectedXI from '../components/SelectedXI';
 import SquadList from '../components/SquadList';
-import TournamentResultPanel from '../components/TournamentResultPanel';
 import { getDifficultyById } from '../game-engine/difficulty';
 import { evaluateLineup } from '../game-engine/evaluation';
 import type {
@@ -136,7 +136,7 @@ export default function GamePage({
       />
 
       {tournamentResult ? (
-        <TournamentResultPanel result={tournamentResult} onReplay={onReplay} onNewDraw={onNewDraw} />
+        <LiveTournamentFlow result={tournamentResult} onReplay={onReplay} onNewDraw={onNewDraw} />
       ) : result ? (
         <ResultPanel result={result} onReplay={onReplay} onNewDraw={onNewDraw} />
       ) : (
