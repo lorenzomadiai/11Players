@@ -84,6 +84,17 @@ Status: implemented locally on `feature/draft-reveal-sequence`, pending review.
 
 ### Remaining Demo Polish
 
+### Batch 7B: Live Tournament Match Flow
+
+Status: implemented locally on `feature/live-tournament-match-flow`, pending review.
+
+- Do not reveal the final tournament result immediately after kickoff.
+- Show one user match at a time with a Start Match action.
+- Reveal important events from an automatic match clock, pausing briefly when each event appears.
+- Provide slow, fast, and simulate playback modes in the live match header.
+- Surface extra-time and penalty resolutions from the tactical engine when knockout matches require them.
+- Show the existing tournament summary only after the user's run is played through.
+
 - Balance match numbers.
 - Verify mobile and desktop layouts.
 - Add restart/continue tournament handling.

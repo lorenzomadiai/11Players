@@ -7,9 +7,9 @@ import { createEmptyLineup } from '../../game-engine/formations';
 import { requireFormation, requireSquad } from '../../test/fixtures';
 import type { GameDraw, Squad } from '../../types/game';
 
-const finishDrawReveal = () => {
-  act(() => {
-    vi.advanceTimersByTime(1200);
+const finishDrawReveal = async () => {
+  await act(async () => {
+    await vi.advanceTimersByTimeAsync(1200);
   });
 };
 
@@ -62,17 +62,18 @@ describe('GamePage - draft reveal sequence', () => {
   });
 
   afterEach(() => {
+    vi.clearAllTimers();
     vi.useRealTimers();
     vi.restoreAllMocks();
   });
 
-  it('keeps the next squad names hidden until the draw reel finishes', () => {
+  it('keeps the next squad names hidden until the draw reel finishes', async () => {
     render(<DraftHarness />);
 
     expect(screen.getByText(/Awaiting final draw/i)).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /Cafu/i })).not.toBeInTheDocument();
 
-    finishDrawReveal();
+    await finishDrawReveal();
 
     expect(screen.getByRole('button', { name: /Cafu/i })).toBeInTheDocument();
 
@@ -81,7 +82,7 @@ describe('GamePage - draft reveal sequence', () => {
     expect(screen.getByText(/Awaiting final draw/i)).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /Messi/i })).not.toBeInTheDocument();
 
-    finishDrawReveal();
+    await finishDrawReveal();
 
     expect(screen.getByRole('button', { name: /Messi/i })).toBeInTheDocument();
   });

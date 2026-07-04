@@ -11,9 +11,9 @@ describe('GamePage — Continue Draft attention glow', () => {
   const formation = requireFormation('433');
   const draw: GameDraw = { squadId: squad.id, formationId: formation.id, challengeId: freePlayChallenge.id };
 
-  const finishDrawReveal = () => {
-    act(() => {
-      vi.advanceTimersByTime(1200);
+  const finishDrawReveal = async () => {
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(1200);
     });
   };
 
@@ -55,14 +55,15 @@ describe('GamePage — Continue Draft attention glow', () => {
   });
 
   afterEach(() => {
+    vi.clearAllTimers();
     vi.useRealTimers();
     vi.unstubAllGlobals();
     vi.restoreAllMocks();
   });
 
-  it('glows the Continue Draft button only after a player is placed on the pitch', () => {
+  it('glows the Continue Draft button only after a player is placed on the pitch', async () => {
     renderPage();
-    finishDrawReveal();
+    await finishDrawReveal();
 
     const continueButton = screen.getByRole('button', { name: /Continue Draft/i });
     expect(continueButton).not.toHaveClass('is-glowing');
